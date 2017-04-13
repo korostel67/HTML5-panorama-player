@@ -1,0 +1,22 @@
+{
+	"title":"Ростов5 Imported",
+	"info": "By Korostel2",
+	"hfov": 110,
+	"pitch": 0,
+	"maxPitch":10,
+	"yaw": 0,
+	"type": "equirectangular",
+	"panorama": "rostov_5/rostov_5.jpg",
+	"hotSpotDebug":true,
+	"transition": {"type": "cssFade", "settings": {"duration": 2000 }},
+	"hotSpots": [
+		["panorama", {
+			"pitch": 10,
+			"yaw": 20,
+			"info": "Imported 1",
+			"sceneId": "house2",
+			"targetYaw": "same",
+			"targetPitch": "same"
+		}]
+	]
+}

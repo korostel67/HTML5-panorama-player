@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html debug="true">
+<head>
+<meta charset="utf-8">
+<script type="text/javascript" src="http://localhost:8080/debug/build/firebug-lite.js"></script>
+<script type="text/javascript" src="src/viewer/js/viewer.js"></script>
+<script type="text/javascript" src="src/etc/util.js"></script>
+</head>
+<body>
+
+<div id="panorama" class="panorama"></div>
+<pre>
+//TODO
+2. Revize autoInteraction and MouseWheelInteraction class on the matter of passing settings (instructions). Each wheel scroll adds data to Dirs array, and this data is not purget at the end.
+1. Revise panorama class. Take a look at image loading whiout XHR [E:\sites\test\JavaScript\promices\loadImage.html]
+</pre>
+<script type="text/javascript">
+var settings = {
+	//"require" : { "id": "settings-1"}, //mode : [ add ]|[ update ]|[ add, update ], },
+	"viewer" : {
+		'container': 'panorama',
+		'width': '100%',
+		'height': '400px',
+		'keyboardZoom' : false,
+		'autoRotate' : true, //Setting this parameter causes the panorama to automatically rotate when loaded.
+		'autoRotateSpeed' : 1000, //The value specifies the rotation speed in degrees per second. Positive is counter-clockwise, and negative is clockwise.
+		'autoRotateInactivityDelay' : 1000, //Sets the delay, in milliseconds, to start automatically rotating the panorama after user activity ceases. This parameter only has an effect if the autoRotate parameter is set.
+		'autoRotateStopDelay' : 2000, //Sets the delay, in milliseconds, to stop automatically rotating the panorama after it is loaded. This parameter only has an effect if the autoRotate parameter is set.
+	},
+	"controls" : [
+		//"fullscreen",
+		["fullscreen",{"top":"10px","left":"20px"}]
+	],
+	"modules" : [
+		"msgBox",
+		"panoInfo"
+	],
+	"set": {
+		//"require": {"id": "set-1"},
+		"firstPanorama" : "rostov_5",
+		"panoramas": {
+			//"rostov_5": {
+			//	"require": {"id": "rostov_5/rostov_5"},
+			//},
+			"rostov_5": {
+				//"require": {"id": "rostov_5/rostov_5"},
+				"useGPanoXMP":false,
+				"title":"Ростов5",
+				"info": "By Korostel2",
+				"hfov": 110,
+				"pitch": 0,
+				//"maxPitch":10,
+				"yaw": 0,
+				"type": "equirectangular",
+				"panorama": "data/panoramas/rostov_5/img/rostov_5.jpg",
+				"transition":"cssFade",
+				"hotSpots": [
+					["panorama", {
+						"pitch": 0,
+						"yaw": 15,
+						"info": "Spring House or Dairy",
+						"sceneId": "house",
+						"targetYaw": 'same',
+						"targetPitch": 'same'
+					}],
+					["panorama", {
+						"pitch": 20,
+						"yaw": 35,
+						"info": "Spring House or Dairy3",
+						"sceneId": "house3",
+						"targetYaw": 'same',
+						"targetPitch": 'same'
+					}],
+					["panorama", {
+						"pitch": 30,
+						"yaw": -25,
+						"info": "Spring House or Dairy2",
+						"sceneId": "house2",
+						"targetYaw": 'same',
+						"targetPitch": 'same'
+					}]
+				]
+			}
+		}
+	}
+}
+
+pannellum.viewer(settings);
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+.pnlm-panorama-info {
+	position: absolute;
+    bottom: 4px;
+    display: none;
+    margin-bottom: 3px;
+    padding-left: 5px;
+    padding-right: 10px;
+    width: 200px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 0px 3px 3px 0px;
+    font-size: 12px;
+    text-align: left;
+    color: #fff;
+}
+
+.pnlm-title-box {
+    position: relative;
+    font-size: 20px;
+    display: table;
+    padding-left: 5px;
+    margin-bottom: 3px;
+}
+
+.pnlm-info-box {
+    position: relative;
+    font-size: 12px;
+    display: table;
+    padding-left: 5px;
+}

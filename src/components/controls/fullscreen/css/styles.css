@@ -1,0 +1,19 @@
+.pnlm-fullscreen-toggle-button {
+    top: 66px;
+    left: 4px;
+    width: 26px;
+    height: 26px;
+    display: none;
+	background-image: url('../img/sprite.png');
+	position:absolute;
+	cursor:pointer;
+	z-index:1;
+}
+
+.pnlm-fullscreen-toggle-button-inactive {
+    background-position: 0 0px;
+}
+
+.pnlm-fullscreen-toggle-button-active {
+    background-position: 0 -26px;
+}

@@ -1,0 +1,216 @@
+.pnlm-container {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    cursor: default;
+    width: 100%;
+    height: 100%;
+    font-family: Helvetica, "Nimbus Sans L", "Liberation Sans", Arial, sans-serif;
+    font-size: 14px;
+    background: #f4f4f4 url('../img/background.png') repeat;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    outline: 0;
+    line-height: 1.4;
+}
+
+.pnlm-container * {
+    box-sizing: content-box;
+}
+
+.pnlm-controls-container , .pnlm-modules-container {
+    position: absolute; top:0px; left:0px;
+	width: 100%;
+    height: 100%;
+}
+
+.pnlm-grab {
+    cursor: url('../img/grab.png') 12 8, default;
+}
+
+.pnlm-grabbing {
+    cursor: url('../img/grabbing.png') 12 8, default;
+}
+
+.pnlm-sprite {
+    /*background-image: url('img/sprites.png');*/
+}
+
+.pnlm-container:-moz-full-screen {
+    height: 100% !important;
+    width: 100% !important;
+}
+.pnlm-container:-webkit-full-screen {
+    height: 100% !important;
+    width: 100% !important;
+}
+.pnlm-container:fullscreen {
+    height: 100% !important;
+    width: 100% !important;
+}
+
+.pnlm-render-container {
+    cursor: inherit;
+    
+    /* Fix display bug in Safari 7 */
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.pnlm-panocontainer {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.pnlm-controls {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #999;
+    border-color: rgba(0,0,0,0.4);
+    border-radius: 3px;
+    cursor: pointer;
+    z-index: 2;
+    /* Fix Safari fullscreen bug */
+    -webkit-transform: translateZ(9999px);
+    transform: translateZ(9999px);
+}
+
+.pnlm-control:hover {
+    background-color: #E8E8E8;
+}
+
+.pnlm-error-message {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 100px;
+    margin: -50px 0 0 -100px;
+    background-color: rgba(155,0,0,.7);
+    border-radius: 3px;
+    text-align: center;
+    font-size: 14px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.pnlm-error-message a {
+    color: #fff;
+}
+
+.pnlm-error-message .error-message-wrap {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 0 5px 0 5px;
+}
+
+.pnlm-error-message .error-message-wrap .error-message-name {
+    font-weight:bold;
+}
+.pnlm-error-message .error-message-wrap .error-message-message {
+    font-weight:normal;
+}
+
+.pnlm-hotspots-container {
+	position: absolute;
+    left: 0;
+    top: 0;
+	box-sizing: content-box;
+}
+
+.pnlm-hotspot {
+    position: absolute;
+    height: 26px;
+    width: 26px;
+    visibility: hidden;
+    cursor: default;
+    border-radius: 13px;
+    vertical-align: middle;
+    top: 0;
+    z-index: 1;
+    background-image: url('../img/sprite.png');
+    background-repeat: no-repeat;
+}
+.pnlm-hotspot:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+.pnlm-hotspot.pnlm-info {
+    background-position: 0 0px;
+}
+.pnlm-hotspot.pnlm-panorama {
+    background-position: 0 -26px;
+}
+
+div.pnlm-tooltip span {
+    visibility: hidden;
+    position: absolute;
+    border-radius: 3px;
+    background-color: rgba(0,0,0,0.7);
+    color: #fff;
+    text-align: center;
+    max-width: 200px;
+    padding: 5px 10px;
+    margin-top: -41px;
+    margin-left: -220px;
+    cursor: default;
+}
+div.pnlm-tooltip:hover span{
+    visibility: visible;
+}
+div.pnlm-tooltip:hover:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-width: 10px;
+    border-style: solid;
+    border-color: rgba(0,0,0,0.7) transparent transparent transparent;
+    top: -12px;
+    left: 3px;
+}
+
+.pnlm-canvas {
+	position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.pnlm-world {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+}
+.pnlm-face {
+    position: absolute;
+    -webkit-transform-origin: 0 0 0;
+    transform-origin: 0 0 0;
+}
+
+.pnlm-dragfix {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.pnlm-fade-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.pnlm-modules {
+    position: absolute;
+    cursor: pointer;
+    z-index: 2;
+    /* Fix Safari fullscreen bug */
+    -webkit-transform: translateZ(9999px);
+    transform: translateZ(9999px);
+}
