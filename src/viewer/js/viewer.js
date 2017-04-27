@@ -315,7 +315,7 @@ console.log(Config.settings)
 	function startPanorama(panoObject) {
 		// Set new pointing using previous panorama settings
 		// panoObject.load();
-		console.log(panoObject);
+		//console.log(panoObject);
 		console.log("doneIt");
 	}
 
@@ -460,11 +460,49 @@ console.log(Config.settings)
 	*/
 	function onDocumentMouseWheel(event) {
 		event.preventDefault();
+		/*
+		//Simple example without animator
+		var mwData = getMouseWheelData(event);
+		var cPanorama = getPanoramaByIndex('last');
+		setHfov(cPanorama.config.hfov + mwData/2);
+		cPanorama.render();
+		*/
+		/*
+		///Using keyInteraction
+		event.preventDefault();
+		var mwData = (getMouseWheelData(event)<0)?'msScrollIn':'msScrollOut';
+		if( pannellum.animator.interactionPriority('KeyInteraction') === true ) pannellum.animator.stop();
+		if( pannellum.animator.getInteraction() == null ) {
+			var panorama = getPanoramaByIndex('last');
+			var cInteraction;
+			if( !InteractionsCollection.item('KeyInteraction') ) {
+				cInteraction = new pannellum.interactions.keyInteraction({
+					kbKeys:{'msScrollIn':'msZoomIn','msScrollOut':'msZoomOut'},
+					directions:{'msZoomIn':	{ zoom: 5 }, 'msZoomOut':	{ zoom: -5 }}
+				});
+				InteractionsCollection.add('KeyInteraction', cInteraction);
+			}else{
+				cInteraction = InteractionsCollection.item('KeyInteraction');
+			}
+			cInteraction.start(mwData);
+			pannellum.animator.start(
+				cInteraction,
+				panorama
+			)
+		}else if( pannellum.animator.getInteraction().name == 'KeyInteraction' ){
+			pannellum.animator.getInteraction().update(mwData);
+		}
+		pannellum.animator.getInteraction().stop(mwData);
+		//pannellum.animator.stop();
+		*/
+		/*
+		*/
+		///Special MouseWheelInteraction
 		var mwData = getMouseWheelData(event);
 		if( pannellum.animator.interactionPriority('MouseWheelInteraction') === true ) pannellum.animator.stop();
 		if( pannellum.animator.getInteraction() == null ) {
 			var panorama = getPanoramaByIndex('last');
-			var settings = {factor:-1, discretion:2};
+			var settings = {factor:0.5, discretion:2};
 			var cInteraction;
 			if( !InteractionsCollection.item('MouseWheelInteraction') ) {
 				cInteraction = new pannellum.interactions.mouseWheelInteraction(settings);
@@ -657,7 +695,7 @@ console.log(Config.settings)
 			if( pannellum.animator.getInteraction() == null ) {
 				var cInteraction;
 				if( !InteractionsCollection.item('AutoInteraction') ) {
-					cInteraction = new pannellum.interactions.autoInteraction(directions_3);
+					cInteraction = new pannellum.interactions.autoInteraction(directions_1);
 					InteractionsCollection.add('AutoInteraction', cInteraction);
 				}else{
 					cInteraction = InteractionsCollection.item('AutoInteraction');
@@ -703,13 +741,13 @@ console.log(Config.settings)
 	function getMouseWheelData(event){
 		if (event.wheelDeltaY) {
 				// WebKit
-				return event.wheelDeltaY * 0.003;
+				return event.wheelDeltaY * 0.05;
 		} else if (event.wheelDelta) {
 				// Opera / Explorer 9
-				return event.wheelDelta * 0.003;
+				return event.wheelDelta * 0.05;
 		} else if (event.detail) {
 				// Firefox
-				return event.detail * 0.15;
+				return event.detail * 1.5 * -1;
 		}
 		return null;
 	}
@@ -1033,10 +1071,9 @@ var Animator = function() {
 			stop :	stop,
 			getInteraction : function() { return cInteraction },
 			interactionPriority : function(intName) {
-				if( iPriorities.hasOwnProperty(intName) &&
-					iPriorities[intName] > cIPriority ) {
-					return true;
-				}
+				if( !iPriorities.hasOwnProperty(intName) ) return false;
+				if( iPriorities[intName] > cIPriority ) return true;
+				// If interaction object exists in the animator, but not interacting it'
 				if( cInteraction != null && cInteraction.state.interacting === false ) {
 					return true;
 				}

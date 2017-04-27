@@ -430,4 +430,83 @@
 		alert( err instanceof Error ); // true
 		 */
 
+	// Animator
+	//================================
+
+	var Animator = function() {
+		var instance;
+		var animator = function(){
+			var cPanorama = null, cInteraction = null, cIPriority=0;
+			var start = function(interaction, panorama) {
+				cInteraction = interaction;
+				cPanorama = panorama;
+				cIPriority = ( iPriorities.hasOwnProperty(cInteraction.name) ) ? iPriorities[cInteraction.name] : 0;
+				animate();
+			};
+			var stop = function() {
+				if(cInteraction!=null) cInteraction.stop();
+				cInteraction = null;
+				cPanorama = null;
+				cIPriority=0;
+			};
+			var animate = function() {
+				if(cInteraction==null && cPanorama==null) return false;
+				var pos=cInteraction.position( {yaw:cPanorama.config.yaw, pitch:cPanorama.config.pitch, hfov:cPanorama.config.hfov} );
+				if(pos == null) {
+					stop();
+					console.log('animator.stop');
+					return false;
+				}
+
+				cPanorama.setYaw(pos.yaw);
+				cPanorama.setPitch(pos.pitch);
+				cPanorama.setHfov(pos.hfov);
+
+				cPanorama.render();
+				requestAnimationFrame(animate);
+			};
+			var iPriorities = {
+				'AutoInteraction':0,
+				'MouseWheelInteraction':1,
+				'KeyInteraction':1,
+				'MouseInteraction':2,
+				'TouchInteraction':2,
+			};
+			return {
+				start :	function(interaction, panorama) { start(interaction, panorama) },
+				stop :	stop,
+				getInteraction : function() { return cInteraction; },
+				//This method allows to deside if the new interaction can interrapt the current one.
+				//The new interaction can start working if it's priority is higher then current's
+				//and if current interaction still exists in animator but not interacting.
+				//In case the type of new interaction is the same type as current the method returns false
+				//wich means the current interaction could not be interrapted, but updated with new data.
+				interactionPriority : function(intName) {
+					if( !iPriorities.hasOwnProperty(intName) ) return false;
+					if( iPriorities[intName] > cIPriority ) return true;
+					// If interaction object exists in the animator, but not interacting:
+					if( cInteraction != null && cInteraction.state.interacting === false ) {
+						if(cInteraction.name != intName) {
+							//current interaction could be interrapted
+							return true;
+						}else{
+							//current interaction could not be interrapted, but updated with new data
+							return false;
+						}
+					}
+					return false;
+				}
+			};
+		};
+
+		return {
+			getInstance: function(){
+				if(!instance) instance = animator();
+				return instance;
+			}
+		};
+	}();
+
+	pannellum.animator = Animator.getInstance();
+
 }(window, window.pannellum || (window.pannellum={}),undefined));
