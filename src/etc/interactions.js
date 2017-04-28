@@ -3,48 +3,24 @@
 
 	if( !pannellum.hasOwnProperty("interactions") ) pannellum.interactions={};
 
+/************************************
+ * Interaction class
+*************************************/
 	function Interaction() {
-		this.state  = {latestInteraction:null,speedYaw:0,speedPitch:0,speedZoom:0,speedMin:0.01,speedMax:5,interacting:false};
-
 		this.name = 'Interaction';
 		this.type = 'interaction';
+		this.state  = {latestInteraction:null,speedYaw:0,speedPitch:0,speedZoom:0,speedMin:0.01,speedMax:5,interacting:false};
 	}
-/*
-	Interaction.prototype.inertia = function(){
-		var prevPitch = this.panorama.config.pitch;
-		var prevYaw = this.panorama.config.yaw;
-		var prevZoom = this.panorama.config.hfov;
-		var newTime = pannellum.util.setCurrentTime();
-		var diff = ( newTime - this.viewer.viewerState.latestInteraction() ) * this.panorama.config.hfov / 1700;
-		diff = Math.min(diff, 1.0);
-		if (diff > 0) {
-			// "Friction"
-			var friction = 0.85;
-			this.panorama.config.yaw += this.speed.yaw * diff * friction;
-			this.panorama.config.pitch += this.speed.pitch * diff * friction;
-			this.panorama.setHfov(this.panorama.config.hfov + this.speed.zoom * diff * friction);
-
-			this.speed.yaw = this.speed.yaw * 0.8 + (this.panorama.config.yaw - prevYaw) / diff * 0.2;
-			this.speed.pitch = this.speed.pitch * 0.8 + (this.panorama.config.pitch - prevPitch) / diff * 0.2;
-			this.speed.zoom = this.speed.zoom * 0.8 + (this.panorama.config.hfov - prevZoom) / diff * 0.2;
-			// Limit speed
-			this.speed.yaw = Math.min(this.speed.max, Math.max(this.speed.yaw, -this.speed.max));
-			this.speed.pitch = Math.min(this.speed.max, Math.max(this.speed.pitch, -this.speed.max));
-			this.speed.zoom = Math.min(this.speed.max, Math.max(this.speed.zoom, -this.speed.max));
-		}
-	}
-*/
+	Interaction.prototype.start = function(mwData) {return null;}
+	Interaction.prototype.stop = function(mwData) {return null;}
 	Interaction.prototype.position = function( position ) {return null;}
 
 	pannellum.interactions.interaction = Interaction;
 
-}(window, window.pannellum || (window.pannellum={}),undefined));
-
-(function(window, pannellum, u){
-	"use strict";
-
-	if( !pannellum.interactions.hasOwnProperty("interaction") ) throw new Error("pannellum.interactions.interaction class is undefined");
-
+/************************************
+ * VirtualInteraction class
+ * Extends Interaction class
+*************************************/
 	function VirtualInteraction() {
 		VirtualInteraction.superclass.constructor.apply(this, arguments);
 		this.name = 'VirtualInteraction';
@@ -54,16 +30,14 @@
 	pannellum.util.extend(VirtualInteraction, pannellum.interactions.interaction);
 
 	VirtualInteraction.prototype.position = function( position ) {
-		//Position has panorama currentDir position
-		//Rewrite code to update it using commented bloch below
-	//#Get currentDir position
+		//#Get currentDir position
 		var prevYaw = position.yaw;
 		var prevPitch = position.pitch;
 		var prevZoom = position.hfov;
-	//#Get currentDir time
+		//#Get currentDir time
 		var newTime = pannellum.util.setCurrentTime();
-	//#Get currentDir latestInteraction (time)
-	//#Get currentDir hfov correction
+		//#Get currentDir latestInteraction (time)
+		//#Get currentDir hfov correction
 		var diff = ( newTime - this.state.latestInteraction ) * position.hfov / 1700;
 		diff = Math.min(diff, 1.0);
 		var step = {yaw:0, pitch:0, hfov:0, incr:0.2};
@@ -85,12 +59,12 @@
 				return null;
 			}
 		}
-	//#Get new yaw and pitch
+		//#Get new yaw and pitch
 		position.yaw += ( this.state.speedYaw * friction + step.yaw ) * diff;
 		position.pitch += ( this.state.speedPitch * friction + step.pitch ) * diff;
 		position.hfov += ( this.state.speedZoom * friction + step.hfov ) * diff;
 
-	//#Get new speed
+		//#Get new speed
 		this.state.speedYaw = this.state.speedYaw * friction + (position.yaw - prevYaw) / diff * 0.2;
 		this.state.speedPitch = this.state.speedPitch * friction + (position.pitch - prevPitch) / diff * 0.2;
 		this.state.speedZoom = this.state.speedZoom * friction + (position.hfov - prevZoom) / diff * 0.2;
@@ -101,44 +75,36 @@
 		this.state.speedZoom = Math.min(this.state.speedMax, Math.max(this.state.speedZoom, -this.state.speedMax) );
 		return position;
 	}
-
 	pannellum.interactions.virtualInteraction = VirtualInteraction;
 
-}(window, window.pannellum || (window.pannellum={}),undefined));
-
-(function(window, pannellum, u){
-	"use strict";
-
-	if( !pannellum.interactions.hasOwnProperty("virtualInteraction") ) throw new Error("pannellum.interactions.virtualInteraction class is undefined");
-
+/************************************
+ * MouseWheelInteraction class
+ * Extends VirtualInteraction class
+*************************************/
 	function MouseWheelInteraction(settings) {
 		MouseWheelInteraction.superclass.constructor.call(this);
-		var DirsTmp = [];
-		this.factor = ( settings && typeof settings.factor != 'undefined' ) ? settings.factor : 1;
-		this.discretion =  ( settings && (typeof settings.discretion != 'undefined' || settings.discretion > 0) ) ? settings.discretion : 1;
 		this.name = 'MouseWheelInteraction';
 		this.type = 'virtualInteraction';
-		var DirsTmp = [];
+		this.factor = ( settings && typeof settings.factor != 'undefined' ) ? settings.factor : 1;
+		this.discretion =  ( settings && (typeof settings.discretion != 'undefined' || settings.discretion > 0) ) ? settings.discretion : 1;
+		var Dirs = [], CurDir;
 
 		this.addDir = function (dir) {
-			this.state.latestInteraction = pannellum.util.setCurrentTime();
-			DirsTmp.push( dir );
+			Dirs.push( dir );
 		}
 		this.getDir = function () {
-			var curdir = DirsTmp.shift();
-			console.log(curdir);
-			return (curdir) ? curdir: null;
+			CurDir = Dirs.shift();
+			return ( typeof CurDir != 'undefined' ) ? CurDir : null;
 		}
 		this.clearDir = function () {
-			DirsTmp = [];
+			Dirs = [];
 		}
 	}
-
 	pannellum.util.extend(MouseWheelInteraction, pannellum.interactions.virtualInteraction);
 
 	MouseWheelInteraction.prototype.start = function(mwData) {
 		this.state.interacting = true;
-		this.clearDir();
+		//this.clearDir();
 		this.update(mwData);
 	}
 
@@ -159,13 +125,10 @@
 	}
 	pannellum.interactions.mouseWheelInteraction = MouseWheelInteraction;
 
-}(window, window.pannellum || (window.pannellum={}),undefined));
-
-(function(window, pannellum, u){
-	"use strict";
-
-	if( !pannellum.interactions.hasOwnProperty("virtualInteraction") ) throw new Error("pannellum.interactions.virtualInteraction class is undefined");
-
+/************************************
+ * AutoInteraction class
+ * Extends VirtualInteraction class
+*************************************/
 	function AutoInteraction(directions) {
 		AutoInteraction.superclass.constructor.apply(this, arguments);
 		var Dirs = [];
@@ -177,13 +140,14 @@
 		this.type = 'virtualInteraction';
 
 		this.changeDir = function() {
+			this.state.latestInteraction = pannellum.util.setCurrentTime();
 			var dur, _this = this;
 			if( LastUpdated ) window.clearTimeout( LastUpdated );
 			if( DirIndex > DirsLength-1 ) {
 				//#end-instructions The end of instructions
 				//console.log('t|changeDir->changeDir->return false');
 				CurDir = null;
-				_this.stop();
+				this.stop();
 				return false;
 			}
 			CurDir=Dirs[ DirIndex ];
@@ -197,21 +161,18 @@
 		}
 
 		this.addDir = function(dir) {
-			Dirs.push(dir);
-			DirsLength = Dirs.length;
-		}
-
-		this.clearDir = function() {
-			Dirs = [];
+			Dirs.push( dir );
 			DirsLength = Dirs.length;
 		}
 		this.getDir = function() {
 			if( typeof CurDir == 'undefined' ) {
-				console.log('animator->getData->getDir->changeDir');
-				_this.changeDir();
+				this.changeDir();
 			}
-			console.log( 'animator->getData->getDir->return ' + (DirIndex-1), Dirs );
 			return CurDir;
+		}
+		this.clearDir = function() {
+			Dirs = [];
+			DirsLength = Dirs.length;
 		}
 
 		this.dirIndex = function(index){
@@ -227,22 +188,21 @@
 
 	AutoInteraction.prototype.start = function() {
 		this.state.interacting = true;
+		//this.clearDir();
 		this.dirIndex( this.dirIndex() );
 		this.changeDir();
 	}
 	AutoInteraction.prototype.stop = function() {
 		this.state.interacting = false;
+		this.clearDir();
 	}
 
 	pannellum.interactions.autoInteraction = AutoInteraction;
 
-}(window, window.pannellum || (window.pannellum={}),undefined));
-
-(function(window, pannellum, u){
-	"use strict";
-
-	if( !pannellum.interactions.hasOwnProperty("interaction") ) throw new Error("pannellum.interactions.interaction class is undefined");
-
+/************************************
+* MouseInteraction class
+* Extends Interaction class
+*************************************/
 	function MouseInteraction() {
 		MouseInteraction.superclass.constructor.apply(this, arguments);
 
@@ -335,11 +295,10 @@
 
 	pannellum.interactions.mouseInteraction = MouseInteraction;
 
-	}(window, window.pannellum || (window.pannellum={}),undefined));
-
-(function(window, pannellum, u){
-	"use strict";
-	if( !pannellum.interactions.hasOwnProperty("mouseInteraction") ) throw new Error("pannellum.interactions.mouseInteraction class is undefined");
+/************************************
+* TouchInteraction class
+* Extends MouseInteraction class
+*************************************/
 	var TouchInteraction = function(viewer, panorama) {
 		TouchInteraction.superclass.constructor.apply(this, arguments);
 		this.name = 'TouchInteraction';
@@ -368,13 +327,10 @@
 	*/
 	pannellum.interactions.touchInteraction = TouchInteraction;
 
-}(window, window.pannellum || (window.pannellum={}),undefined));
-
-(function(window, pannellum, u){
-	"use strict";
-
-	if( !pannellum.interactions.hasOwnProperty("virtualInteraction") ) throw new Error("pannellum.interactions.virtualInteraction class is undefined");
-
+/************************************
+* KeyInteraction class
+* Extends VirtualInteraction class
+*************************************/
 	function KeyInteraction(settings) {
 		KeyInteraction.superclass.constructor.apply(this, arguments);
 
@@ -501,16 +457,43 @@
 
 	KeyInteraction.prototype.start = function( kbKey ) {
 		this.state.interacting = true;
-		return this.addDir( kbKey );
+		this.update( kbKey );
 	}
 	KeyInteraction.prototype.update = function( kbKey ) {
-		return this.addDir( kbKey );
+		this.addDir( kbKey );
 	}
 	KeyInteraction.prototype.stop = function( kbKey ) {
 		this.state.interacting = false;
 		this.remDir( kbKey );
 	}
-
 	pannellum.interactions.keyInteraction = KeyInteraction;
 
+
 }(window, window.pannellum || (window.pannellum={}),undefined));
+
+
+/*
+Interaction.prototype.inertia = function(){
+	var prevPitch = this.panorama.config.pitch;
+	var prevYaw = this.panorama.config.yaw;
+	var prevZoom = this.panorama.config.hfov;
+	var newTime = pannellum.util.setCurrentTime();
+	var diff = ( newTime - this.viewer.viewerState.latestInteraction() ) * this.panorama.config.hfov / 1700;
+	diff = Math.min(diff, 1.0);
+	if (diff > 0) {
+		// "Friction"
+		var friction = 0.85;
+		this.panorama.config.yaw += this.speed.yaw * diff * friction;
+		this.panorama.config.pitch += this.speed.pitch * diff * friction;
+		this.panorama.setHfov(this.panorama.config.hfov + this.speed.zoom * diff * friction);
+
+		this.speed.yaw = this.speed.yaw * 0.8 + (this.panorama.config.yaw - prevYaw) / diff * 0.2;
+		this.speed.pitch = this.speed.pitch * 0.8 + (this.panorama.config.pitch - prevPitch) / diff * 0.2;
+		this.speed.zoom = this.speed.zoom * 0.8 + (this.panorama.config.hfov - prevZoom) / diff * 0.2;
+		// Limit speed
+		this.speed.yaw = Math.min(this.speed.max, Math.max(this.speed.yaw, -this.speed.max));
+		this.speed.pitch = Math.min(this.speed.max, Math.max(this.speed.pitch, -this.speed.max));
+		this.speed.zoom = Math.min(this.speed.max, Math.max(this.speed.zoom, -this.speed.max));
+	}
+}
+*/
