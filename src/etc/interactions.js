@@ -28,7 +28,13 @@
 		this.getDir = function() {return null;}
 	}
 	pannellum.util.extend(VirtualInteraction, pannellum.interactions.interaction);
-
+	VirtualInteraction.prototype.start = function() {
+		this.state.interacting = true;
+	}
+	VirtualInteraction.prototype.update = function() {}
+	VirtualInteraction.prototype.stop = function() {
+		this.state.interacting = false;
+	}
 	VirtualInteraction.prototype.position = function( position ) {
 		//#Get currentDir position
 		var prevYaw = position.yaw;
@@ -81,47 +87,42 @@
  * MouseWheelInteraction class
  * Extends VirtualInteraction class
 *************************************/
-	function MouseWheelInteraction(settings) {
+	function MouseWheelInteraction() {
 		MouseWheelInteraction.superclass.constructor.call(this);
 		this.name = 'MouseWheelInteraction';
 		this.type = 'virtualInteraction';
-		this.factor = ( settings && typeof settings.factor != 'undefined' ) ? settings.factor : 1;
-		this.discretion =  ( settings && (typeof settings.discretion != 'undefined' || settings.discretion > 0) ) ? settings.discretion : 1;
-		var Dirs = [], CurDir;
+		var Directions = [], CurDir;
 
 		this.addDir = function (dir) {
-			Dirs.push( dir );
+			Directions.push( dir );
 		}
 		this.getDir = function () {
-			CurDir = Dirs.shift();
+			CurDir = Directions.shift();
 			return ( typeof CurDir != 'undefined' ) ? CurDir : null;
 		}
 		this.clearDir = function () {
-			Dirs = [];
+			Directions = [];
 		}
 	}
 	pannellum.util.extend(MouseWheelInteraction, pannellum.interactions.virtualInteraction);
 
-	MouseWheelInteraction.prototype.start = function(mwData) {
-		this.state.interacting = true;
-		//this.clearDir();
-		this.update(mwData);
+	MouseWheelInteraction.prototype.start = function(directions) {
+		MouseWheelInteraction.superclass.start.call(this);
+		this.update(directions);
 	}
-
-	MouseWheelInteraction.prototype.stop = function() {
-		this.state.interacting = false;
-		this.clearDir();
-	}
-
-	MouseWheelInteraction.prototype.update = function(mwData) {
+	MouseWheelInteraction.prototype.update = function(directions) {
 		this.state.latestInteraction = pannellum.util.setCurrentTime();
-		if(this.discretion == 1) {
-			this.addDir({zoom:mwData * this.factor});
-		}else{
-			for(var i=0;i<this.discretion;i++) {
-				this.addDir({zoom:mwData/this.discretion * this.factor});
+		var directionsLength = directions.length;
+		if(directionsLength > 0) {
+			for(var i=0;i<directionsLength;i++) {
+				directions[i].zoom = directions[i].zoom;
+				this.addDir(directions[i]);
 			}
 		}
+	}
+	MouseWheelInteraction.prototype.stop = function() {
+		MouseWheelInteraction.superclass.stop.call(this);
+		this.clearDir();
 	}
 	pannellum.interactions.mouseWheelInteraction = MouseWheelInteraction;
 
@@ -131,10 +132,10 @@
 *************************************/
 	function AutoInteraction(directions) {
 		AutoInteraction.superclass.constructor.apply(this, arguments);
-		var Dirs = [];
-		if( directions instanceof Array ) Dirs = directions;
+		var Directions = [];
+		if( directions instanceof Array ) Directions = directions;
 
-		var DirIndex=0, CurDir, LastUpdated, DirsLength = Dirs.length, AnimFrame = 1000 / 60;
+		var DirIndex=0, CurDir, LastUpdated, DirectionsLength = Directions.length, AnimFrame = 1000 / 60;
 
 		this.name = 'AutoInteraction';
 		this.type = 'virtualInteraction';
@@ -143,14 +144,14 @@
 			this.state.latestInteraction = pannellum.util.setCurrentTime();
 			var dur, _this = this;
 			if( LastUpdated ) window.clearTimeout( LastUpdated );
-			if( DirIndex > DirsLength-1 ) {
+			if( DirIndex > DirectionsLength-1 ) {
 				//#end-instructions The end of instructions
 				//console.log('t|changeDir->changeDir->return false');
 				CurDir = null;
 				this.stop();
 				return false;
 			}
-			CurDir=Dirs[ DirIndex ];
+			CurDir=Directions[ DirIndex ];
 			DirIndex++;
 			dur = ( CurDir.hasOwnProperty('dur') ) ? CurDir.dur : AnimFrame;
 
@@ -161,8 +162,8 @@
 		}
 
 		this.addDir = function(dir) {
-			Dirs.push( dir );
-			DirsLength = Dirs.length;
+			Directions.push( dir );
+			DirectionsLength = Directions.length;
 		}
 		this.getDir = function() {
 			if( typeof CurDir == 'undefined' ) {
@@ -171,13 +172,13 @@
 			return CurDir;
 		}
 		this.clearDir = function() {
-			Dirs = [];
-			DirsLength = Dirs.length;
+			Directions = [];
+			DirectionsLength = Directions.length;
 		}
 
 		this.dirIndex = function(index){
 			if( typeof index == 'number' ) {
-				if( index > DirsLength-1 || index < 0 ) index=0;
+				if( index > DirectionsLength-1 || index < 0 ) index=0;
 				DirIndex = index;
 			}
 			return DirIndex;
@@ -330,89 +331,93 @@
 /************************************
 * KeyInteraction class
 * Extends VirtualInteraction class
+* Performes interaction according to instractions accessed by defined keys.
+^ Instractions and keys are passed to constructor in object:
+cInteraction = new pannellum.interactions.keyInteraction({
+	keys:{
+		'38': '0',
+		'104': '0',
+		'105': '45',
+		'33': '45',
+		'39': '90',
+		'102': '90',
+		'99': '135',
+		'34': '135',
+		'40': '180',
+		'98': '180',
+		'97': '225',
+		'35': '225',
+		'100': '270',
+		'37': '270',
+		'103': '315',
+		'36': '315',
+		'107': 'zoomIn',
+		'109': 'zoomOut'
+	},
+	var st = 0.3;
+	directions:{
+		'0':	{ vector: {dir:0, step:st} },
+		'45':	{ vector: {dir:45, step:st} },
+		'90':	{ vector: {dir:90, step:st} },
+		'135':	{ vector: {dir:135, step:st} },
+		'180':	{ vector: {dir:180, step:st} },
+		'225':	{ vector: {dir:225, step:st} },
+		'270':	{ vector: {dir:270, step:st} },
+		'315':	{ vector: {dir:315, step:st} },
+		'zoomIn':	{ zoom: 0.2 },
+		'zoomOut':	{ zoom: -0.2 }
+	}
+});
 *************************************/
 	function KeyInteraction(settings) {
 		KeyInteraction.superclass.constructor.apply(this, arguments);
-
-		var st = 0.3;
-		var Dirs = {
-			'0':	{ vector: {dir:0, step:st} },
-			'45':	{ vector: {dir:45, step:st} },
-			'90':	{ vector: {dir:90, step:st} },
-			'135':	{ vector: {dir:135, step:st} },
-			'180':	{ vector: {dir:180, step:st} },
-			'225':	{ vector: {dir:225, step:st} },
-			'270':	{ vector: {dir:270, step:st} },
-			'315':	{ vector: {dir:315, step:st} },
-			'zoomIn':	{ zoom: 0.2 },
-			'zoomOut':	{ zoom: -0.2 }
-		}
-		var KbKeys = {
-			'38': '0',
-			'104': '0',
-			'105': '45',
-			'33': '45',
-			'39': '90',
-			'102': '90',
-			'99': '135',
-			'34': '135',
-			'40': '180',
-			'98': '180',
-			'97': '225',
-			'35': '225',
-			'100': '270',
-			'37': '270',
-			'103': '315',
-			'36': '315',
-			'107': 'zoomIn',
-			'109': 'zoomOut'
-		};
+		var Directions = {};
+		var Keys = {};
+		var DirectionsTmp = {};
 		if( typeof settings != 'undefined' ) {
 			if( typeof settings.directions != 'undefined' && settings.directions instanceof Object ) {
-				Object.deepExtend( Dirs, settings.directions );
+				Object.deepExtend( Directions, settings.directions );
 			}
-			if( typeof settings.kbKeys != 'undefined' && settings.kbKeys instanceof Object ) {
-				Object.deepExtend( KbKeys, settings.kbKeys );
+			if( typeof settings.keys != 'undefined' && settings.keys instanceof Object ) {
+				Object.deepExtend( Keys, settings.keys );
 			}
 		}
 
-		var DirsTmp = {};
-
 		function checkCounterDir(d) {
-			if( d === null || !Dirs.hasOwnProperty(d) ) return false;
-			if( Dirs[d].hasOwnProperty('vector') ) {
-				var currentDir = Dirs[d].vector.dir;
+			if( d === null || !Directions.hasOwnProperty(d) ) return false;
+			if( Directions[d].hasOwnProperty('vector') ) {
+				var currentDir = Directions[d].vector.dir;
 				var cDir = currentDir - 180 + ( (currentDir<180)?360:0 );
-				if( DirsTmp.hasOwnProperty(cDir) ) return false;
+				if( DirectionsTmp.hasOwnProperty(cDir) ) return false;
 			}
-			if( Dirs[d].hasOwnProperty('zoom') ) {
+			if( Directions[d].hasOwnProperty('zoom') ) {
 				switch(true) {
-					case (d=='zoomIn') : return !DirsTmp.hasOwnProperty('zoomOut'); break;
-					case (d=='zoomOut') : return !DirsTmp.hasOwnProperty('zoomIn'); break;
+					case (d=='zoomIn') : return !DirectionsTmp.hasOwnProperty('zoomOut'); break;
+					case (d=='zoomOut') : return !DirectionsTmp.hasOwnProperty('zoomIn'); break;
 				}
 			}
 			return true;
 		}
-		/* Gets average direction of DirsTmp
+		/* Gets average direction of DirectionsTmp
 		 * returns:
-		 *  null if DirsTmp is empty
+		 *  null if DirectionsTmp is empty
 		 *  average direction
 		 */
 		var getAverage = function() {
 			var i = 0, dir, currentDir={vector:{dir:null, step:null},zoom:0}, ar_dir = [], ar_step = [], ar_zoom = [];
-			for( dir in DirsTmp ) {
-				if( !DirsTmp.hasOwnProperty(dir) ) continue;
-				if( DirsTmp[dir].hasOwnProperty('vector') ) {
-					ar_dir.push( DirsTmp[dir].vector.dir );
-					ar_step.push( DirsTmp[dir].vector.step );
+			for( dir in DirectionsTmp ) {
+				if( !DirectionsTmp.hasOwnProperty(dir) ) continue;
+				if( DirectionsTmp[dir].hasOwnProperty('vector') ) {
+					ar_dir.push( DirectionsTmp[dir].vector.dir );
+					ar_step.push( DirectionsTmp[dir].vector.step );
 				}
-				if( DirsTmp[dir].hasOwnProperty('zoom') ) {
-					ar_zoom.push( DirsTmp[dir].zoom );
+				if( DirectionsTmp[dir].hasOwnProperty('zoom') ) {
+					ar_zoom.push( DirectionsTmp[dir].zoom );
 				}
 				i++;
 			}
 			if( i == 0 ) return null;
-			if( i == 1 ) return DirsTmp[dir];
+			if( i == 1 ) return DirectionsTmp[dir];
 			var dir_avrg = ar_dir.reduce( add, 0) / i;
 			var min = Math.min.apply(Math, ar_dir);
 			var max = Math.max.apply(Math, ar_dir);
@@ -425,28 +430,28 @@
 			function add(a, b) { return a + b; };
 		}
 
-		function getInstruction (kbKey) {
-			//if( typeof kbKey != 'number') return null;
-			var k = kbKey;
-			if( !KbKeys.hasOwnProperty(k) ) return null;
-			return KbKeys[k];
+		function getDirectionId(key) {
+			//if( typeof key != 'number') return null;
+			var k = key;
+			if( !Keys.hasOwnProperty(k) ) return null;
+			return Keys[k];
 		}
 
 		this.name = 'KeyInteraction';
 		this.type = 'virtualInteraction';
 
-		this.addDir = function (kbKey) {
-			//if( typeof kbKey != 'number') return null;
-			var d = getInstruction(kbKey);
-			if( d === null || !Dirs.hasOwnProperty(d) || DirsTmp.hasOwnProperty(d) || checkCounterDir(d) === false  ) return false;
+		this.addDir = function (key) {
+			//if( typeof key != 'number') return null;
+			var d = getDirectionId(key);
+			if( d === null || !Directions.hasOwnProperty(d) || DirectionsTmp.hasOwnProperty(d) || checkCounterDir(d) === false  ) return false;
 			this.state.latestInteraction = pannellum.util.setCurrentTime();
-			DirsTmp[d] = Dirs[d];
+			DirectionsTmp[d] = Directions[d];
 		}
-		this.remDir = function (kbKey) {
-			//if( typeof kbKey != 'number') return null;
-			var d = getInstruction(kbKey);
-			if( d === null || !Dirs.hasOwnProperty(d) || !DirsTmp.hasOwnProperty(d) ) return false;
-			delete DirsTmp[d];
+		this.remDir = function (key) {
+			//if( typeof key != 'number') return null;
+			var d = getDirectionId(key);
+			if( d === null || !Directions.hasOwnProperty(d) || !DirectionsTmp.hasOwnProperty(d) ) return false;
+			delete DirectionsTmp[d];
 		}
 		this.getDir = function () {
 			return getAverage();
@@ -455,16 +460,16 @@
 
 	pannellum.util.extend(KeyInteraction, pannellum.interactions.virtualInteraction);
 
-	KeyInteraction.prototype.start = function( kbKey ) {
+	KeyInteraction.prototype.start = function( key ) {
 		this.state.interacting = true;
-		this.update( kbKey );
+		this.update( key );
 	}
-	KeyInteraction.prototype.update = function( kbKey ) {
-		this.addDir( kbKey );
+	KeyInteraction.prototype.update = function( key ) {
+		this.addDir( key );
 	}
-	KeyInteraction.prototype.stop = function( kbKey ) {
+	KeyInteraction.prototype.stop = function( key ) {
 		this.state.interacting = false;
-		this.remDir( kbKey );
+		this.remDir( key );
 	}
 	pannellum.interactions.keyInteraction = KeyInteraction;
 

@@ -452,7 +452,10 @@
 			var animate = function() {
 				if(cInteraction==null && cPanorama==null) return false;
 				var pos=cInteraction.position( {yaw:cPanorama.config.yaw, pitch:cPanorama.config.pitch, hfov:cPanorama.config.hfov} );
-				if(pos == null) {
+				console.log(pos);
+				if(pos == null ||
+					Math.round(pos.hfov) == cPanorama.config.maxHfov ||
+					Math.round(pos.hfov) == cPanorama.config.minHfov ) {
 					stop();
 					console.log('animator.stop');
 					return false;

@@ -498,25 +498,29 @@ console.log(Config.settings)
 		/*
 		*/
 		///Special MouseWheelInteraction
-		var mwData = getMouseWheelData(event);
+		var factor = (getMouseWheelData(event)>0)?1:-1;
+		var directions = [
+			{zoom:0.1 * factor},
+			{zoom:0.5 * factor},
+			{zoom:0.9 * factor}
+		];
 		if( pannellum.animator.interactionPriority('MouseWheelInteraction') === true ) pannellum.animator.stop();
 		if( pannellum.animator.getInteraction() == null ) {
 			var panorama = getPanoramaByIndex('last');
-			var settings = {factor:0.5, discretion:2};
 			var cInteraction;
 			if( !InteractionsCollection.item('MouseWheelInteraction') ) {
-				cInteraction = new pannellum.interactions.mouseWheelInteraction(settings);
+				cInteraction = new pannellum.interactions.mouseWheelInteraction();
 				InteractionsCollection.add('MouseWheelInteraction', cInteraction);
 			}else{
 				cInteraction = InteractionsCollection.item('MouseWheelInteraction');
 			}
-			cInteraction.start(mwData);
+			cInteraction.start(directions);
 			pannellum.animator.start(
 				cInteraction,
 				panorama
 			)
 		}else if( pannellum.animator.getInteraction().name == 'MouseWheelInteraction' ){
-			pannellum.animator.getInteraction().update(mwData);
+			pannellum.animator.getInteraction().update(directions);
 		}
 	}
 /*
@@ -642,9 +646,40 @@ console.log(Config.settings)
 			var panorama = getPanoramaByIndex('last');
 			var cInteraction;
 			if( !InteractionsCollection.item('KeyInteraction') ) {
+				var st = 0.3;
 				cInteraction = new pannellum.interactions.keyInteraction({
-					kbKeys:{'101':'zoomIn','96':'zoomOut','68':'94'},
-					directions:{'94':{ vector: {dir:178, step:3} }}
+					keys:{
+						'38': '0',
+						'104': '0',
+						'105': '45',
+						'33': '45',
+						'39': '90',
+						'102': '90',
+						'99': '135',
+						'34': '135',
+						'40': '180',
+						'98': '180',
+						'97': '225',
+						'35': '225',
+						'100': '270',
+						'37': '270',
+						'103': '315',
+						'36': '315',
+						'107': 'zoomIn',
+						'109': 'zoomOut'
+					},
+					directions:{
+						'0':	{ vector: {dir:0, step:st} },
+						'45':	{ vector: {dir:45, step:st} },
+						'90':	{ vector: {dir:90, step:st} },
+						'135':	{ vector: {dir:135, step:st} },
+						'180':	{ vector: {dir:180, step:st} },
+						'225':	{ vector: {dir:225, step:st} },
+						'270':	{ vector: {dir:270, step:st} },
+						'315':	{ vector: {dir:315, step:st} },
+						'zoomIn':	{ zoom: 0.2 },
+						'zoomOut':	{ zoom: -0.2 }
+					}
 				});
 				InteractionsCollection.add('KeyInteraction', cInteraction);
 			}else{
@@ -1027,70 +1062,6 @@ var PartsLoader = function() {
 }();
 
 pannellum.partsLoader = PartsLoader.getInstance();
-
-// Animator
-//================================
-
-var Animator = function() {
-	var instance;
-	var animator = function(){
-		var cPanorama = null, cInteraction = null, cIPriority=0;
-		var iPriorities = {
-			'AutoInteraction':0,
-			'KeyInteraction':1,
-			'MouseWheelInteraction':2,
-			'MouseInteraction':2,
-			'TouchInteraction':2
-		};
-		var start = function(interaction, panorama) {
-			cInteraction = interaction;
-			cPanorama = panorama;
-			cIPriority = ( iPriorities.hasOwnProperty(cInteraction.name) ) ? iPriorities[cInteraction.name] : 0;
-			animate();
-		};
-		var stop = function() {
-			cInteraction = null;
-			cPanorama = null;
-			cIPriority=0;
-			console.log('animator.stop');
-		};
-		var animate = function() {
-			if(cInteraction==null && cPanorama==null) return false;
-			var pos=cInteraction.position( {yaw:cPanorama.config.yaw, pitch:cPanorama.config.pitch, hfov:cPanorama.config.hfov} );
-			if(pos == null) { stop(); return false; }
-
-			cPanorama.setYaw(pos.yaw);
-			cPanorama.setPitch(pos.pitch);
-			cPanorama.setHfov(pos.hfov);
-
-			cPanorama.render();
-			requestAnimationFrame(animate);
-		};
-		return {
-			start :	function(interaction, panorama) { start(interaction, panorama) },
-			stop :	stop,
-			getInteraction : function() { return cInteraction },
-			interactionPriority : function(intName) {
-				if( !iPriorities.hasOwnProperty(intName) ) return false;
-				if( iPriorities[intName] > cIPriority ) return true;
-				// If interaction object exists in the animator, but not interacting it'
-				if( cInteraction != null && cInteraction.state.interacting === false ) {
-					return true;
-				}
-				return false;
-			}
-		};
-	};
-
-	return {
-		getInstance: function(){
-			if(!instance) instance = animator();
-			return instance;
-		}
-	};
-}();
-
-pannellum.animator = Animator.getInstance();
 
 /* ---------- EventBusClass ------------- */
 var EventBusClass = function() {
