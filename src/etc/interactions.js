@@ -5,21 +5,40 @@
 
 /************************************
  * Interaction class
+ ^ This is a base class for all kind of interactions could occure during panorama playing. The main job of interactions is to transform data obtained somehow from user actions into new panorama position. Interaction can not change panorama position directly. It can only pass the new panorama position to animator class which is responsible for panorama position update.
+ Here presented two kind of instruction subclasses. One can obtain data directly from user input (such as mouse position). The second - virtual interaction - which are using predefined data sets to controll panorama position. They can not get data from user input such as mouse position (for ex. key press or arbitrary panorama animations).
+ Interactions work together with animator class. The former creates new panorama position the latter puts it to panorama and makes rendering.
 *************************************/
 	function Interaction() {
 		this.name = 'Interaction';
 		this.type = 'interaction';
-		this.state  = {latestInteraction:null,speedYaw:0,speedPitch:0,speedZoom:0,speedMin:0.01,speedMax:5,interacting:false};
+		this.state  = {
+			latestInteraction:	null,
+			speedYaw:			0,
+			speedPitch:		0,
+			speedZoom:		0,
+			speedMin:			0.01,
+			speedMax:			5,
+			interacting:	false
+		};
 	}
-	Interaction.prototype.start = function(mwData) {return null;}
-	Interaction.prototype.stop = function(mwData) {return null;}
-	Interaction.prototype.position = function( position ) {return null;}
+	Interaction.prototype.start = function() {
+		this.state.interacting = true;
+	}
+	Interaction.prototype.stop = function() {
+		this.state.interacting = false;
+	}
+	Interaction.prototype.update = function() {return null;}
+
+	//Returns new panorama position
+	Interaction.prototype.position = function() {return null;}
 
 	pannellum.interactions.interaction = Interaction;
 
 /************************************
  * VirtualInteraction class
  * Extends Interaction class
+ * This is a base class for classes which are using special instructions to set panorama position. It helps to create interactions which can not obtain data from user unput, such as key press. Such interactions need predefined set of instructions to be processed and converted to panorama position: zoom and vector. Opposed to these kind of instructions are for example mouse interactions where data can be obtained right from the mouse position and converted to panorama position.
 *************************************/
 	function VirtualInteraction() {
 		VirtualInteraction.superclass.constructor.apply(this, arguments);
@@ -28,13 +47,7 @@
 		this.getDir = function() {return null;}
 	}
 	pannellum.util.extend(VirtualInteraction, pannellum.interactions.interaction);
-	VirtualInteraction.prototype.start = function() {
-		this.state.interacting = true;
-	}
-	VirtualInteraction.prototype.update = function() {}
-	VirtualInteraction.prototype.stop = function() {
-		this.state.interacting = false;
-	}
+
 	VirtualInteraction.prototype.position = function( position ) {
 		//#Get currentDir position
 		var prevYaw = position.yaw;
@@ -86,6 +99,28 @@
 /************************************
  * MouseWheelInteraction class
  * Extends VirtualInteraction class
+ This class was created in order to make mouse wheel zoom interactions smoother. Direct convertion of mousewheel data to panorama position makes zooming procedure jumpy due to discrete nature of mouse wheel action. The code was simple:
+ -----------------------
+ //Simple example without animator
+ var mwData = getMouseWheelData(event);
+ var cPanorama = getPanoramaByIndex('last');
+ setHfov(cPanorama.config.hfov + mwData/2);
+ cPanorama.render();
+ ----------------------
+ To make the mousewheel interaction smooth we need more data and a bit more logic. The class is based on instructions and is extending virtual interaction. Each mousewheel scroll passes a couple or more zooming instructions to animator, those are executed immediately one by one. The more instructions we pass the tmoother the interaction could be. Zooming in and out are controlled by factor obained from the real mouse weel data.
+ var factor = (getMouseWheelData(event)>0)?1:-1;
+ var directions = [
+	 {zoom:0.1 * factor},
+	 {zoom:0.5 * factor},
+	 {zoom:0.9 * factor}
+ ];
+ TODO: To make this interaction react to mouse position while zooming there could probably be such instructions:
+ // var directions = [
+ // 	{zoom:0.1 * factor, vector:{dir:90 * factor, step:0.1}},
+ // 	{zoom:0.5 * factor, vector:{dir:90 * factor, step:0.3}},
+ // 	{zoom:0.9 * factor, vector:{dir:90 * factor, step:0.5}}
+ // ];
+ //Vector and step could be obtained from the moude position.
 *************************************/
 	function MouseWheelInteraction() {
 		MouseWheelInteraction.superclass.constructor.call(this);
@@ -129,12 +164,14 @@
 /************************************
  * AutoInteraction class
  * Extends VirtualInteraction class
+ Virtual interaction could be used to create autorotation animation. The movement of panorama coulbe predefined by a set of instructions passed to constructor. Each instruction can contain vector, zoom and execution time.
+
+ TODO: Implement another kind of instruction wich will let us move panorama to a special point< for example to a hotspot.
 *************************************/
 	function AutoInteraction(directions) {
 		AutoInteraction.superclass.constructor.apply(this, arguments);
 		var Directions = [];
 		if( directions instanceof Array ) Directions = directions;
-
 		var DirIndex=0, CurDir, LastUpdated, DirectionsLength = Directions.length, AnimFrame = 1000 / 60;
 
 		this.name = 'AutoInteraction';
@@ -154,13 +191,11 @@
 			CurDir=Directions[ DirIndex ];
 			DirIndex++;
 			dur = ( CurDir.hasOwnProperty('dur') ) ? CurDir.dur : AnimFrame;
-
 			LastUpdated = setTimeout( function() {
 				//console.log('t|changeDir->changeDir');
 				_this.changeDir();
 			}, dur );
 		}
-
 		this.addDir = function(dir) {
 			Directions.push( dir );
 			DirectionsLength = Directions.length;
@@ -175,7 +210,6 @@
 			Directions = [];
 			DirectionsLength = Directions.length;
 		}
-
 		this.dirIndex = function(index){
 			if( typeof index == 'number' ) {
 				if( index > DirectionsLength-1 || index < 0 ) index=0;
@@ -188,14 +222,14 @@
 	pannellum.util.extend(AutoInteraction, pannellum.interactions.virtualInteraction);
 
 	AutoInteraction.prototype.start = function() {
-		this.state.interacting = true;
+		AutoInteraction.superclass.start.call(this);
 		//this.clearDir();
 		this.dirIndex( this.dirIndex() );
 		this.changeDir();
 	}
 	AutoInteraction.prototype.stop = function() {
-		this.state.interacting = false;
-		this.clearDir();
+		AutoInteraction.superclass.stop.call(this);
+		//this.clearDir(); //Commented, as it clears all instructions and  interaction can not start again without them.
 	}
 
 	pannellum.interactions.autoInteraction = AutoInteraction;
@@ -203,22 +237,19 @@
 /************************************
 * MouseInteraction class
 * Extends Interaction class
+The class can obtain data from mouse position and convert it to panorama position.
 *************************************/
 	function MouseInteraction() {
 		MouseInteraction.superclass.constructor.apply(this, arguments);
-
 		var CurPos =  null;
-
 		this.name = 'MouseInteraction';
 		this.type = 'interaction';
-
 		this.state.interacting = false;
 		this.state.lastPosX = 0;
 		this.state.lastPosY = 0;
 		this.state.lastPosYaw = 0;
 		this.state.lastPosPitch = 0;
 		this.state.canvas = {width: null, height: null };
-
 		this.setPos = function(pos) {
 			CurPos = pos;
 		}
@@ -229,27 +260,26 @@
 	pannellum.util.extend(MouseInteraction, pannellum.interactions.interaction);
 
 	MouseInteraction.prototype.start = function(settings) {
-		this.state.interacting = true;
+		MouseInteraction.superclass.start.call(this);
+		this.state.latestInteraction = pannellum.util.setCurrentTime();
 		this.state.lastPosX = settings.x;
 		this.state.lastPosY = settings.y;
 		this.state.lastPosYaw = settings.yaw;
 		this.state.lastPosPitch = settings.pitch;
 		this.state.canvas = {width: settings.canvas.width, height: settings.canvas.height };
-		this.state.latestInteraction = pannellum.util.setCurrentTime();
-		//container.classList.add('pnlm-grabbing');
-		//container.classList.remove('pnlm-grab');
-		/*  */
 	};
 	MouseInteraction.prototype.update = function(pos) {
 		this.setPos(pos);
 	};
 	MouseInteraction.prototype.stop = function() {
-		if (pannellum.util.setCurrentTime() - this.state.latestInteraction > 15) {
-	        // Prevents jump when user rapidly moves mouse, stops, and then
-	        // releases the mouse button
-			this.state.interacting = false;
+		MouseInteraction.superclass.stop.call(this);
+		// The next is not clear.
+		//if (pannellum.util.setCurrentTime() - this.state.latestInteraction > 15) {
+			// Prevents jump when user rapidly moves mouse, stops, and then
+			// releases the mouse button
+			//this.state.interacting = false;
 			//this.setPos(null);
-	    }
+	  //}
 	};
 
 	MouseInteraction.prototype.position = function( position ) {
@@ -261,22 +291,17 @@
 			var yaw = ((Math.atan(this.state.lastPosX / canvas.width * 2 - 1) - Math.atan(curPos.x / canvas.width * 2 - 1)) * 180 / Math.PI * position.hfov / 90) + this.state.lastPosYaw;
 			this.state.speedYaw = (yaw - position.yaw) % 360 * 0.2;
 			position.yaw = yaw;
-
 			var vfov = 2 * Math.atan(Math.tan(position.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
-
 			var pitch = ((Math.atan(curPos.y / canvas.height * 2 - 1) - Math.atan(this.state.lastPosY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + this.state.lastPosPitch;
 			this.state.speedPitch = (pitch - position.pitch) * 0.2;
 			position.pitch = pitch;
 		}else{
-		/*
-			return null;
-				*/
 			var prevYaw = position.yaw;
 			var prevPitch = position.pitch;
 			position.yaw += this.state.speedYaw * friction;
 			position.pitch += this.state.speedPitch * friction;
 
-		//#Get new speed
+			// Get new speed
 			this.state.speedYaw = this.state.speedYaw * friction + (position.yaw - prevYaw) * 0.23;
 			this.state.speedPitch = this.state.speedPitch * friction + (position.pitch - prevPitch) * 0.23;
 
@@ -291,7 +316,7 @@
 				return null;
 			}
 		}
-			return position;
+		return position;
 	}
 
 	pannellum.interactions.mouseInteraction = MouseInteraction;
@@ -331,9 +356,10 @@
 /************************************
 * KeyInteraction class
 * Extends VirtualInteraction class
-* Performes interaction according to instractions accessed by defined keys.
+* Performes interaction according to instractions accessed by defined keys. It is no mettrer how the direction keis are accessed. It could be keyboard key press, click event bound to control component or even timeout event.
 ^ Instractions and keys are passed to constructor in object:
 cInteraction = new pannellum.interactions.keyInteraction({
+	//Keys a pair of access key and direction key. There could be more then one access key for one direction key.
 	keys:{
 		'38': '0',
 		'104': '0',
@@ -356,6 +382,7 @@ cInteraction = new pannellum.interactions.keyInteraction({
 	},
 	var st = 0.3;
 	directions:{
+		//Direction key and corresponding instruction
 		'0':	{ vector: {dir:0, step:st} },
 		'45':	{ vector: {dir:45, step:st} },
 		'90':	{ vector: {dir:90, step:st} },
@@ -461,14 +488,14 @@ cInteraction = new pannellum.interactions.keyInteraction({
 	pannellum.util.extend(KeyInteraction, pannellum.interactions.virtualInteraction);
 
 	KeyInteraction.prototype.start = function( key ) {
-		this.state.interacting = true;
+		KeyInteraction.superclass.start.call(this);
 		this.update( key );
 	}
 	KeyInteraction.prototype.update = function( key ) {
 		this.addDir( key );
 	}
 	KeyInteraction.prototype.stop = function( key ) {
-		this.state.interacting = false;
+		KeyInteraction.superclass.stop.call(this);
 		this.remDir( key );
 	}
 	pannellum.interactions.keyInteraction = KeyInteraction;

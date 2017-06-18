@@ -1,8 +1,7 @@
 /**
-* @fileoverview This file is an example of how JSDoc can be used to document
-* JavaScript.
+* @fileoverview This is the panorama Viewer class.
 *
-* @author Ryan Asleson
+* @author Yuri Korostelev
 * @version 1.0
 */
 
@@ -10,6 +9,11 @@
 
 "use strict";
 
+/**
+ * Creates a new panorama viewer.
+ * @constructor
+ * @param {Object} initialConfig - Inital configuration for viewer.
+ */
 var Viewer = function(InitialConfig) {
 	var This = this,
 	Config = {
@@ -38,6 +42,13 @@ var Viewer = function(InitialConfig) {
 		zoom:0,
 		max:5
 	};
+
+	/**
+	 * Keeps the viewers state.
+	 *TODO: Revise the class. It is probably not needed any more
+	 * @private
+	 * @returns {Mixed}
+	 */
 	var ViewerState = function() {
 		var locked = true;
 		var interacting = false;
@@ -72,6 +83,7 @@ var Viewer = function(InitialConfig) {
 		}
 	}();
 	this.viewerState = ViewerState;
+
 	pannellum.eventBus.addEventListener("components_ready",
 		function(event, prop) {
 			var state = { modules:false, controls:false }
@@ -166,6 +178,10 @@ console.log(Config.settings)
 		}}
 	], document.head );
 
+/**
+ * Initializes viewer.
+ * @private
+ */
 	function init() {
 		try{
 			ViewerDataTypes = {
@@ -235,6 +251,11 @@ console.log(Config.settings)
 		}
 	}
 
+/**
+ * Loads panorama by it's ID.
+ * @private
+ * @param {string} Panorama ID to be loaded.
+ */
 	function loadPanorama(panoId) {
 		ViewerState.lock();
 		//Options:
@@ -290,6 +311,13 @@ console.log(Config.settings)
 		requireSettings(sourcesList);
 	}
 
+	/**
+	 * Creates new panorama instance.
+	 * @private
+	 * @param {String} Panorama ID to be instanciated.
+	 * @param {String} Panorama settings.
+	 * @returns {Object} Panorama object
+	 */
 	function getNewPanoramaInstance(panoId, panoSettings) {
 		try{
 			if( !panoId )  throw new Error("Panorama id is not defoned");
@@ -312,6 +340,15 @@ console.log(Config.settings)
 		}
 	}
 
+	/**
+	 * Starts panorama.
+	 * The function is intended to start functioning initialized earlier panorama. In case we are trying
+	 * to show previously played panorama, it's oject could be taken from PartsCollection["panoramas"].
+	 * Constructing and starting panoramas should be differed. We need to have possobility to start constructed earlier panorama.
+	 * TODO: This function doesn't work now. Make it wor as intended.
+	 * @private
+	 * @param {object} Panorama object to be started.
+	 */
 	function startPanorama(panoObject) {
 		// Set new pointing using previous panorama settings
 		// panoObject.load();
@@ -319,6 +356,12 @@ console.log(Config.settings)
 		console.log("doneIt");
 	}
 
+	/**
+	 * Loades external settings
+	 * @private
+	 * @param {Object} External settings source list.
+	 * @returns (Object) Settings object
+	 */
 	function requireSettings(sl){
 		if(!sl) return false;
 		var sourcesList = sl;
@@ -352,6 +395,11 @@ console.log(Config.settings)
 		return process();
 	}
 
+	/**
+	 * Prepares (loads) componebts
+	 * @private
+	 * @param {object} load settings
+	 */
 	function prepareComponents(addComponents) {
 		if( addComponents ) pannellum.partsLoader.addParts(
 			"components." + addComponents.type,
@@ -390,6 +438,11 @@ console.log(Config.settings)
 		);
 	}
 
+	/**
+	 * Sets HTML containers for the viewer itself and components.
+	 * Binds event listeners.
+	 * @private
+	 */
 	function setContainers() {
 		// Initialize containers
 		Container = document.getElementById(Config.viewer.container);
@@ -452,12 +505,21 @@ console.log(Config.settings)
 
 		// Deal with MS pointer events
 		if (window.navigator.pointerEnabled) Container.style.touchAction = 'none';
+
+		pannellum.animator.setInteractionPriority({
+			'AutoInteraction':0,
+			'MouseWheelInteraction':1,
+			'KeyInteraction':1,
+			'MouseInteraction':2,
+			'TouchInteraction':2,
+		});
 	}
 
-
-	/*
-	Mouse Wheel interactions
-	*/
+	/**
+	 * Performs Mouse Wheel interactions.
+	 * @private
+	 * @param {MouseEvent} event - mousewheel or DOMMouseScroll event
+	 */
 	function onDocumentMouseWheel(event) {
 		event.preventDefault();
 		/*
@@ -467,36 +529,7 @@ console.log(Config.settings)
 		setHfov(cPanorama.config.hfov + mwData/2);
 		cPanorama.render();
 		*/
-		/*
-		///Using keyInteraction
-		event.preventDefault();
-		var mwData = (getMouseWheelData(event)<0)?'msScrollIn':'msScrollOut';
-		if( pannellum.animator.interactionPriority('KeyInteraction') === true ) pannellum.animator.stop();
-		if( pannellum.animator.getInteraction() == null ) {
-			var panorama = getPanoramaByIndex('last');
-			var cInteraction;
-			if( !InteractionsCollection.item('KeyInteraction') ) {
-				cInteraction = new pannellum.interactions.keyInteraction({
-					kbKeys:{'msScrollIn':'msZoomIn','msScrollOut':'msZoomOut'},
-					directions:{'msZoomIn':	{ zoom: 5 }, 'msZoomOut':	{ zoom: -5 }}
-				});
-				InteractionsCollection.add('KeyInteraction', cInteraction);
-			}else{
-				cInteraction = InteractionsCollection.item('KeyInteraction');
-			}
-			cInteraction.start(mwData);
-			pannellum.animator.start(
-				cInteraction,
-				panorama
-			)
-		}else if( pannellum.animator.getInteraction().name == 'KeyInteraction' ){
-			pannellum.animator.getInteraction().update(mwData);
-		}
-		pannellum.animator.getInteraction().stop(mwData);
-		//pannellum.animator.stop();
-		*/
-		/*
-		*/
+
 		///Special MouseWheelInteraction
 		var factor = (getMouseWheelData(event)>0)?1:-1;
 		var directions = [
@@ -504,6 +537,11 @@ console.log(Config.settings)
 			{zoom:0.5 * factor},
 			{zoom:0.9 * factor}
 		];
+		// var directions = [
+		// 	{zoom:0.1 * factor, vector:{dir:90 * factor, step:0.1}},
+		// 	{zoom:0.5 * factor, vector:{dir:90 * factor, step:0.3}},
+		// 	{zoom:0.9 * factor, vector:{dir:90 * factor, step:0.5}}
+		// ];
 		if( pannellum.animator.interactionPriority('MouseWheelInteraction') === true ) pannellum.animator.stop();
 		if( pannellum.animator.getInteraction() == null ) {
 			var panorama = getPanoramaByIndex('last');
@@ -523,9 +561,12 @@ console.log(Config.settings)
 			pannellum.animator.getInteraction().update(directions);
 		}
 	}
-/*
- Mouse interactions
-*/
+
+	/**
+	 * Performs Mouse interactions on mousedown event.
+	 * @private
+	 * @param {MouseEvent} event - mousedown event
+	 */
 	function onDocumentMouseDown(event){
 		// Override default action
 		event.preventDefault();
@@ -554,7 +595,15 @@ console.log(Config.settings)
 			cInteraction.start(settings);
 			cInteraction.update(pos);
 		}
+		Container.classList.add('pnlm-grabbing');
+		Container.classList.remove('pnlm-grab');
 	}
+
+	/**
+	 * Performs Mouse interactions on mousemove event.
+	 * @private
+	 * @param {MouseEvent} event - mousemove event
+	 */
 	function onDocumentMouseMove(event){
 		var cInteraction = pannellum.animator.getInteraction();
 		if( cInteraction !== null && cInteraction.name == 'MouseInteraction' && cInteraction.state.interacting === true ){
@@ -562,18 +611,26 @@ console.log(Config.settings)
 			cInteraction.update(pos);
 		}
 	}
+
+	/**
+	 * Performs Mouse interactions on mouseup event.
+	 * @private
+	 * @param {MouseEvent} event - mouseup event
+	 */
 	function onDocumentMouseUp(event){
 		var cInteraction = pannellum.animator.getInteraction();
 		if( cInteraction !== null && cInteraction.name == 'MouseInteraction' && cInteraction.state.interacting === true ){
 			cInteraction.stop();
+			Container.classList.remove('pnlm-grabbing');
+			Container.classList.add('pnlm-grab');
 		}
 	}
 
-
-/*
- Touch interactions
-*/
-
+	/**
+	 * Performs Touch interactions on touchstart event.
+	 * @private
+	 * @param {TouchEvent} event - touchstart event
+	 */
 	function onDocumentTouchStart(event){
 		// Override default action
 		event.preventDefault();
@@ -610,6 +667,11 @@ console.log(Config.settings)
 		}
 	}
 
+	/**
+	 * Performs Touch interactions on touchmove event.
+	 * @private
+	 * @param {TouchEvent} event - touchmove event
+	 */
 	function onDocumentTouchMove(event) {
 		var cInteraction = pannellum.animator.getInteraction();
 		if( cInteraction !== null && cInteraction.name == 'TouchInteraction' && cInteraction.state.interacting === true ){
@@ -624,18 +686,26 @@ console.log(Config.settings)
 		}
 	}
 
+	/**
+	 * Performs Touch interactions on touchend event.
+	 * @private
+	 * @param {TouchEvent} event - touchend event
+	 */
 	function onDocumentTouchEnd(event){
 		var cInteraction = pannellum.animator.getInteraction();
 		if( cInteraction !== null && cInteraction.name == 'TouchInteraction' && cInteraction.state.interacting === true ){
 			cInteraction.stop();
 		}
 	}
-/*
- Key interactions
-*/
 
+	/**
+	 * Performs Key interactions on keydown event.
+	 * @private
+	 * @param {KeyEvent} event - keydown event
+	 */
 	function onDocumentKeyPress(event) {
 		var kbKey = getKeyCode(event);
+		console.log('Key pressed #' + kbKey);
 		//F5 (refresh) || F12 (console)
 		if( kbKey == 116 || kbKey == 123 ) return false;
 		//Esc
@@ -647,7 +717,7 @@ console.log(Config.settings)
 			var cInteraction;
 			if( !InteractionsCollection.item('KeyInteraction') ) {
 				var st = 0.3;
-				cInteraction = new pannellum.interactions.keyInteraction({
+				var settings = {
 					keys:{
 						'38': '0',
 						'104': '0',
@@ -665,8 +735,10 @@ console.log(Config.settings)
 						'37': '270',
 						'103': '315',
 						'36': '315',
-						'107': 'zoomIn',
-						'109': 'zoomOut'
+						'65': 'zoomIn',
+						'83': 'zoomOut',
+						'90': 'zoomInSlow', //z
+						'88': 'zoomOutSlow' //x
 					},
 					directions:{
 						'0':	{ vector: {dir:0, step:st} },
@@ -678,9 +750,12 @@ console.log(Config.settings)
 						'270':	{ vector: {dir:270, step:st} },
 						'315':	{ vector: {dir:315, step:st} },
 						'zoomIn':	{ zoom: 0.2 },
-						'zoomOut':	{ zoom: -0.2 }
+						'zoomOut':	{ zoom: -0.2 },
+						'zoomInSlow':	{ zoom: 0.05 },
+						'zoomOutSlow':	{ zoom: -0.05 }
 					}
-				});
+				}
+				cInteraction = new pannellum.interactions.keyInteraction(settings);
 				InteractionsCollection.add('KeyInteraction', cInteraction);
 			}else{
 				cInteraction = InteractionsCollection.item('KeyInteraction');
@@ -693,6 +768,7 @@ console.log(Config.settings)
 		}else if( pannellum.animator.getInteraction().name == 'KeyInteraction' ){
 			pannellum.animator.getInteraction().update(kbKey);
 		}
+		//This is an example of autointeraction
 		if(kbKey == 32) { //Space
 			if( pannellum.animator.interactionPriority('AutoInteraction') === true ) pannellum.animator.stop();
 			var directions_1 = [
@@ -714,19 +790,9 @@ console.log(Config.settings)
 				{ vector: {dir:90, step:0.5}, dur:3000 },
 				{ vector: {dir:135, step:0.5}, dur:1000 },
 				{zoom: 0.2, dur:3000 },
+				{zoom: -0.2, dur:3000 },
 			];
-			var directions_2 = [
-				{ vector: {dir:90, step:0.1}, dur:3000 },
-				{ vector: {dir:90, step:0.3}, dur:3000 },
-				{ vector: {dir:90, step:0.1}, dur:3000 },
-			];
-			var directions_3 = [
-				{zoom: 0.5 },
-					{zoom: 0.5 },
-						{zoom: 0.5 },
-							{zoom: 0.5 },
-								{zoom: 0.5 },
-			];
+
 			if( pannellum.animator.getInteraction() == null ) {
 				var cInteraction;
 				if( !InteractionsCollection.item('AutoInteraction') ) {
@@ -743,6 +809,12 @@ console.log(Config.settings)
 			}
 		}
 	}
+
+	/**
+	 * Performs Key interactions on keyup event.
+	 * @private
+	 * @param {KeyEvent} event - keyup event
+	 */
 	function onDocumentKeyUp(event) {
 		var kbKey = getKeyCode(event);
 		event.preventDefault();
@@ -766,6 +838,12 @@ console.log(Config.settings)
 	    return pos;
 	}
 
+	/**
+	 * Gets key code from passed event object.
+	 * @private
+	 * @param {KeyEvent} event - Key event
+	 * @returns {Number} key code
+	 */
 	function getKeyCode(event) {
 		var keynumber = event.keycode;
 		if (event.which) keynumber = event.which;
@@ -773,6 +851,12 @@ console.log(Config.settings)
 		return null;
 	}
 
+	/**
+	 * Gets mouse wheel data from passed event object.
+	 * @private
+	 * @param {MousewheelEvent}
+	 * @returns {Number}
+	 */
 	function getMouseWheelData(event){
 		if (event.wheelDeltaY) {
 				// WebKit
@@ -817,53 +901,12 @@ console.log(Config.settings)
 	}
 
 	/**
-	 * Increases panorama zoom. For use with zoom button.
+	 * Gets panorama object from PartsCollection["panoramas"]
+	 * by it's index in the RenderContainer.
 	 * @private
+	 * @param {number} Panorama index.
+	 * @returns {Object} Panorama object
 	 */
-	function zoomIn() {
-		var panorama = getPanoramaByIndex('last');
-			if (!ViewerState.locked()) {
-					setHfov(panorama.config.hfov - 5);
-			}
-	}
-
-	/**
-	 * Decreases panorama zoom. For use with zoom button.
-	 * @private
-	 */
-	function zoomOut() {
-		var panorama = getPanoramaByIndex('last');
-			if (!ViewerState.locked()) {
-					setHfov(panorama.config.hfov + 5);
-			}
-	}
-
-	/**
-	 * Sets viewer's horizontal field of view.
-	 * @private
-	 * @param {number} hfov - Desired horizontal field of view in degrees.
-	 */
-	function setHfov(hfov) {
-			// Keep field of view within bounds
-		var panorama = getPanoramaByIndex('last');
-			var minHfov = panorama.config.minHfov;
-			if (panorama.config.type == 'multires' && panorama) {
-					minHfov = Math.min(minHfov, panorama.getCanvas().width / (panorama.config.multiRes.cubeResolution / 90 * 0.9));
-			}
-			if (minHfov >= panorama.config.maxHfov) {
-					// Don't change view if bounds don't make sense
-					console.log('HFOV bounds do not make sense (minHfov >= maxHfov).')
-					return;
-			} if (hfov < minHfov) {
-					panorama.config.hfov = minHfov;
-			} else if (hfov > panorama.config.maxHfov) {
-					panorama.config.hfov = panorama.config.maxHfov;
-			} else {
-					panorama.config.hfov = hfov;
-			}
-	}
-
-
 	function getPanoramaByIndex(i) {
 		if( !i ) i = 0;
 		if( RenderContainer.childNodes.length == 0 ) {
@@ -883,6 +926,12 @@ console.log(Config.settings)
 		return panoObject;
 	}
 
+
+/**
+ * Error message controller. Shows/hides error message HTML box or outputs it in the console.
+ * Singletone
+ * @constructor
+ */
 	var ErrorMessage = function() {
 		var instance;
 		var errModule;
@@ -931,6 +980,13 @@ console.log(Config.settings)
 }
 pannellum.viewer = function() { return new Viewer(settings); }
 
+
+
+/**
+ * Components preloader.
+ * Singletone
+ * @constructor
+ */
 var PartsLoader = function() {
 	var instance;
 
@@ -1063,7 +1119,10 @@ var PartsLoader = function() {
 
 pannellum.partsLoader = PartsLoader.getInstance();
 
-/* ---------- EventBusClass ------------- */
+/**
+ * EventBusClass.
+ * @constructor
+ */
 var EventBusClass = function() {
 		this.listeners = {};
 	};

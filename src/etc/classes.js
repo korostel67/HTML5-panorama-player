@@ -1,27 +1,71 @@
+/**
+ * @fileOverview This file contains classes used by panorama player.
+ * @author <a href="mailto:korostel67@gmail.com">Yuri Korostelev</a>
+ */
+
 (function(window, pannellum, u){
 
 	"use strict"
 
-	////// Collection prototype ///////
+	/**
+	 * Collection prototype
+	 * @namespace
+	 */
 	if( !pannellum.hasOwnProperty('collections') ) pannellum.collections={};
+
+	/**
+	 * Collections base class
+   * @class
+   */
 	var Collection = function(){
+		/**
+     * The collection
+     * @private
+     */
 		var collection = null;
 		this.collection = function() { return collection; }();
 	}
-	Collection.prototype.add = function(itemObject) {}
+	/**
+	 * Adds item to collection.
+	 * @memberof Collection
+	 * @param {Mixed}
+	 */
+	Collection.prototype.add = function(itemObject) {
+		if(!itemObject) return null;
+		this.collection.push(itemObject);
+	}
+	/**
+	 * Gets item from collection.
+	 * @memberof Collection
+	 * @param {number}
+	 * @returns {*}
+	 */
 	Collection.prototype.item = function(itemIndex) {
 		if( typeof itemIndex == 'undefined' || typeof this.collection[itemIndex] == 'undefined' ) return null;
 		return this.collection[itemIndex];
 	}
+	/**
+	 * Removes item from collection.
+	 * @memberof Collection
+	 * @param {number}
+	 */
 	Collection.prototype.remove = function(itemIndex) {
 		if( typeof itemIndex == 'undefined' || typeof this.collection[itemIndex] == 'undefined' ) return null;
 		delete this.collection[itemIndex];
 	}
+	/**
+	 * Clears the collection.
+	 * @memberof Collection
+	 */
 	Collection.prototype.clear = function() {
 		this.collection = null;
 	}
 
-	////// ArrayCollection prototype ///////
+	/**
+	 * ArrayCollection class. Collection items are kept in array.
+   * @class
+	 * @extends Collection
+   */
 	var ArrayCollection = function(){
 		ArrayCollection.superclass.constructor.apply(this, arguments);
 		var collection = [];
@@ -30,16 +74,32 @@
 	}
 	pannellum.util.extend(ArrayCollection, Collection);
 
+	/**
+	 * Adds item to collection.
+	 * @memberof ArrayCollection
+	 * @param {Mixed}
+	 */
 	ArrayCollection.prototype.add = function(itemObject) {
 		if(!itemObject) return null;
 		this.collection.push(itemObject);
 	}
+
+	/**
+	 * Clears collection.
+	 * @memberof ArrayCollection
+	 */
 	ArrayCollection.prototype.clear = function() {
 		this.collection = [];
 	}
+
+	/** @namespace */
 	pannellum.collections.arrayCollection = ArrayCollection;
 
-	////// ObjectCollection prototype ///////
+	/**
+	 * ObjectCollection class. Collection items are kept in object.
+   * @class
+	 * @extends Collection
+   */
 	var ObjectCollection = function(){
 		ObjectCollection.superclass.constructor.apply(this, arguments);
 		var collection = {};
@@ -47,17 +107,37 @@
 	}
 	pannellum.util.extend(ObjectCollection, Collection);
 
+
+	/**
+	 * Adds item to collection.
+	 * @memberof ObjectCollection
+	 * @param {string|number}
+	 * @param {Mixed}
+	 */
 	ObjectCollection.prototype.add = function(itemIndex, itemObject) {
 		if(!itemIndex || !itemObject) return null;
 		if( this.collection.hasOwnProperty(itemIndex) ) throw new Error("Can not add the element \"" + itemIndex + "\" into collection. It does exist there.");
 		this.collection[itemIndex] = itemObject;
 	}
+
+	/**
+	 * Clears the collection.
+	 * @memberof ObjectCollection
+	 */
 	ObjectCollection.prototype.clear = function() {
 		this.collection = {};
 	}
+
+	/** @namespace */
 	pannellum.collections.objectCollection = ObjectCollection;
 
-	////// Hotspots Collection prototype ///////
+	/**
+	 * HotSpotsCollection class.
+	 * @description Creates HotSpotsCollection object and HTML container
+	 * to display hotSpots.
+   * @class
+	 * @extends ArrayCollection
+   */
 	var HotSpotsCollection = function(host, hostContainer){
 		HotSpotsCollection.superclass.constructor.apply(this);
 		this.host = host;
@@ -70,19 +150,37 @@
 			},
 		}, this.hostContainer);
 	}
-	pannellum.util.extend(HotSpotsCollection, pannellum.collections.arrayCollection);
+	pannellum.util.extend(HotSpotsCollection, ArrayCollection);
 
+ /**
+ * Creates hotspot instance and adds it to collection and HTML container.
+ * @memberof HotSpotsCollection
+ * @param {object} HotSpot settings
+ */
 	HotSpotsCollection.prototype.add = function(itemSettings) {
 		if(!itemSettings) return false;
 		var hs = new pannellum.components.hotSpots[ itemSettings.name ](this, this.container, itemSettings.settings );
 		HotSpotsCollection.superclass.add.call(this, hs);
 		//hs.create(this.container);
 	}
+
+	 /**
+	 * Removes hotspot from collection and HTML container.
+	 * @memberof HotSpotsCollection
+	 * @param {number}
+	 */
 	HotSpotsCollection.prototype.remove = function(itemIndex) {
 		if(typeof itemIndex == 'undefined' ) return false;
 		HotSpotsCollection.superclass.remove.apply(this, arguments);
 		this.container.removeChild( itemIndex );
 	}
+
+	 /**
+	 * Changes hotSpot position according to panorama position.
+	 * @memberof HotSpotsCollection
+	 * @param {number}
+	 * @param {objest}	Current panorama position
+	 */
 	HotSpotsCollection.prototype.translate = function(itemIndex, panoPosition) {
 		if( typeof itemIndex == 'undefined' || typeof panoPosition == 'undefined' ) return false;
 		var hs = this.item(itemIndex);
@@ -112,32 +210,69 @@
 			hs.translate({x:tX, y:tY});
 		}
 	}
+
+	/**
+	* Shows HotSpotsCollection HTML container
+	^ @memberof HotSpotsCollection
+	*/
 	HotSpotsCollection.prototype.show = function() {
 		pannellum.util.domElement.show(this.container);
 	}
+
+	/**
+	* Hides HotSpotsCollection HTML container
+	^ @memberof HotSpotsCollection
+	*/
 	HotSpotsCollection.prototype.hide = function() {
 		pannellum.util.domElement.hide(this.container);
 	}
+
+	/**
+	* Resizes HotSpotsCollection HTML container to fill it's parent container
+	^ @memberof HotSpotsCollection
+	*/
 	HotSpotsCollection.prototype.resize = function() {
 		var pixelRatio = window.devicePixelRatio || 1;
 		this.container.width = this.container.clientWidth * pixelRatio;
 		this.container.height = this.container.clientHeight * pixelRatio;
 	}
-	//Clears the collection of hs instances and the container
+
+	/**
+	* Clears HotSpotsCollection and HTML container.
+	^ @memberof HotSpotsCollection
+	*/
 	HotSpotsCollection.prototype.clear = function() {
 		this.container.innerHTML = "";
 		HotSpotsCollection.superclass.clear.call(this);
 	}
-	//Clears the collection of hs instances, the container and then removes the container
+
+	/**
+	* destroys HotSpotsCollection object and it's HTML container
+	^ @memberof HotSpotsCollection
+	*/
 	HotSpotsCollection.prototype.destroy = function() {
 		this.clear();
 		this.hostContainer.removeChild(this.container);
 	}
+
+	/**@namespace*/
 	pannellum.collections.hotSpotsCollection = HotSpotsCollection;
 
-/////// Component Base Class ///////
+	/**@namespace*/
 	if( !pannellum.hasOwnProperty("components") ) pannellum.components={};
 
+	/**
+	 * Component Base Class
+	 * @class
+	 * @property {string} name
+	 * @property {string} type - Component type (control, panorama, module, hotspot).
+	 * @property {HTMLElement} host - Viever instance
+	 * @property {HTMLElement} hostContainer - Host HTML Container where component
+	 																					container will be placed
+	 * @property {HTMLElement} container - HTML Container for components HTMLElements
+	 																			of this type
+	 * @property {object} config - Component configuration
+	 */
 	var Component = function(host, hostContainer, config){
 		this.name = "Component";
 		this.type = "component";
@@ -145,6 +280,8 @@
 		this.hostContainer = hostContainer;
 		this.container = pannellum.util.domElement.create({ name : "div", attributes : {"display":"none","className": "pnlm-component"}}, this.hostContainer);
 		this.config = {};
+
+		/** @namespace */
 		this.state = function() {
 			var locked = false;
 			return {
@@ -452,10 +589,7 @@
 			var animate = function() {
 				if(cInteraction==null && cPanorama==null) return false;
 				var pos=cInteraction.position( {yaw:cPanorama.config.yaw, pitch:cPanorama.config.pitch, hfov:cPanorama.config.hfov} );
-				console.log(pos);
-				if(pos == null ||
-					Math.round(pos.hfov) == cPanorama.config.maxHfov ||
-					Math.round(pos.hfov) == cPanorama.config.minHfov ) {
+				if(pos == null ) {
 					stop();
 					console.log('animator.stop');
 					return false;
@@ -464,26 +598,22 @@
 				cPanorama.setYaw(pos.yaw);
 				cPanorama.setPitch(pos.pitch);
 				cPanorama.setHfov(pos.hfov);
-
 				cPanorama.render();
 				requestAnimationFrame(animate);
 			};
-			var iPriorities = {
-				'AutoInteraction':0,
-				'MouseWheelInteraction':1,
-				'KeyInteraction':1,
-				'MouseInteraction':2,
-				'TouchInteraction':2,
-			};
+			var iPriorities = {};
 			return {
 				start :	function(interaction, panorama) { start(interaction, panorama) },
 				stop :	stop,
 				getInteraction : function() { return cInteraction; },
-				//This method allows to deside if the new interaction can interrapt the current one.
+				//This method allows to deside if the new interaction can interrupt the current one.
 				//The new interaction can start working if it's priority is higher then current's
 				//and if current interaction still exists in animator but not interacting.
 				//In case the type of new interaction is the same type as current the method returns false
 				//wich means the current interaction could not be interrapted, but updated with new data.
+				setInteractionPriority : function(ipr) {
+					iPriorities = ipr;
+				},
 				interactionPriority : function(intName) {
 					if( !iPriorities.hasOwnProperty(intName) ) return false;
 					if( iPriorities[intName] > cIPriority ) return true;
