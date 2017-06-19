@@ -107,7 +107,6 @@
 	}
 	pannellum.util.extend(ObjectCollection, Collection);
 
-
 	/**
 	 * Adds item to collection.
 	 * @memberof ObjectCollection
@@ -150,7 +149,7 @@
 			},
 		}, this.hostContainer);
 	}
-	pannellum.util.extend(HotSpotsCollection, ArrayCollection);
+	pannellum.util.extend(HotSpotsCollection, pannellum.collections.arrayCollection);
 
  /**
  * Creates hotspot instance and adds it to collection and HTML container.
@@ -264,6 +263,9 @@
 	/**
 	 * Component Base Class
 	 * @class
+	 ^ @param {HTMLElement} The host
+	 ^ @param {HTMLElement} The host container
+	 ^ @param {object} Configuration
 	 * @property {string} name
 	 * @property {string} type - Component type (control, panorama, module, hotspot).
 	 * @property {HTMLElement} host - Viever instance
@@ -291,6 +293,13 @@
 			}
 		}();
 	}
+
+	/**
+	* Checks component configuration
+	^ @memberof Component
+	* @param {object} Component configuration object
+	* @param {object} Data types apropriate for the component
+	*/
 	Component.prototype.checkConfig = function(config, dataTypes){
 		if( config && typeof config == "object" &&  dataTypes && typeof dataTypes == "object" ) {
 			for(var ci in dataTypes) {
@@ -300,22 +309,57 @@
 			}
 		}
 	}
+
+	/**
+	* Show component HTMLElement
+	^ @memberof Component
+	*/
 	Component.prototype.show = function(){
 		pannellum.util.domElement.show(this.container);
 	}
+
+	/**
+	* Hide component HTMLElement
+	^ @memberof Component
+	*/
 	Component.prototype.hide = function(){
 		pannellum.util.domElement.hide(this.container);
 	}
+
+	/**
+	* Disable component. Removes component HTMLElement container from the host container
+	^ @memberof Component
+	*/
 	Component.prototype.disable = function(){
 		this.hostContainer.removeChild(this.container);
 	}
+
+	/**
+	* Updates component content.
+	^ @memberof Component
+	*/
 	Component.prototype.update = function(prop){}
 
+	/**@namespace*/
 	pannellum.components.component = Component;
 
-/////// Control Base Class ///////
 	if( !pannellum.components.hasOwnProperty("controls") ) pannellum.components.controls = {};
 
+/**
+ * Control base Class
+ * @class
+ ^ @extends pannellum.components.component
+ ^ @param {HTMLElement} The host
+ ^ @param {HTMLElement} The host container
+ ^ @param {object} Configuration
+ * @property {string} name
+ * @property {string} type - Control type (control). This type will have all the inheritors.
+ * @property {HTMLElement} host - Viever instance
+ * @property {HTMLElement} hostContainer - Host HTML Container where controls
+																					container will be placed
+ * @property {HTMLElement} container - HTML Container for controls HTMLElements
+ * @property {object} config - Control configuration
+ */
 	var Control = function(host, hostContainer, config){
 		Control.superclass.constructor.apply(this, arguments);
 		this.name = "Control";
@@ -325,8 +369,24 @@
 	pannellum.util.extend(Control, pannellum.components.component);
 	pannellum.components.controls.control = Control;
 
-/////// Module Base Class ///////
+
 	if( !pannellum.components.hasOwnProperty("modules") ) pannellum.components.modules={};
+
+	/**
+	 * Module base Class
+	 * @class
+	 ^ @extends pannellum.components.component
+	 ^ @param {HTMLElement} The host
+	 ^ @param {HTMLElement} The host container
+	 ^ @param {object} Configuration
+	 * @property {string} name
+	 * @property {string} type - Module type (module). This type will have all the inheritors.
+	 * @property {HTMLElement} host - Viever instance
+	 * @property {HTMLElement} hostContainer - Host HTML Container where modules
+																						container will be placed
+	 * @property {HTMLElement} container - HTML Container for modules HTMLElements
+	 * @property {object} config - Module configuration
+	 */
 	var Module = function(host, hostContainer, config){
 		Module.superclass.constructor.apply(this, arguments);
 		this.name = "Module";
@@ -336,12 +396,27 @@
 	pannellum.util.extend(Module, pannellum.components.component);
 	pannellum.components.modules.module = Module;
 
-/////// HotSpot Base Class ///////
 	if( !pannellum.components.hasOwnProperty("hotSpots") ) pannellum.components.hotSpots={};
+
+	/**
+	 * HotSpot Base Class
+	 * @class
+	 ^ @extends pannellum.components.component
+	 ^ @param {HTMLElement} The host
+	 ^ @param {HTMLElement} The host container
+	 ^ @param {object} Configuration
+	 * @property {string} name
+	 * @property {string} type - Module type (hotSpot). This type will have all the inheritors.
+	 * @property {HTMLElement} host - Viever instance
+	 * @property {HTMLElement} hostContainer - Host HTML Container where hotSpots
+																						container will be placed
+	 * @property {HTMLElement} container - HTML Container for hotSpots HTMLElements
+	 * @property {object} config - HotSpot configuration
+	 */
 	var HotSpot = function(host, hostContainer, config){
 		HotSpot.superclass.constructor.apply(this, arguments);
-		this.type = "hotSpot";
 		this.name = "HotSpot";
+		this.type = "hotSpot";
 		var dataTypes = {
 			yaw : pannellum.dataTypes.dtNumber({ min: -360, max: 360, default: 0 }),
 			pitch : pannellum.dataTypes.dtNumber({ min: -85, max: 85, default: 0 }),
@@ -376,6 +451,11 @@
 
 	pannellum.util.extend(HotSpot, pannellum.components.component);
 
+	/**
+	* Creates hotSpot HTMLElement
+	^ @memberof HotSpot
+	* @param {HTMLElement} HTML Container for hotSpots HTMLElements
+	*/
 	HotSpot.prototype.create = function(container) {
 		this.container = pannellum.util.domElement.create({
 			name : 'div',
@@ -391,22 +471,45 @@
 		}});
 		return this.container;
 	}
+
+	/**
+	* Destroys hotSpot HTMLElement
+	^ @memberof HotSpot
+	*/
 	HotSpot.prototype.destroy = function() {
 		this.container.removeChild( this.container );
 		this.container = undefined;
 	}
+
+	/**
+	* Transforms hotSpot HTMLElement
+	^ @memberof HotSpot
+	* @param {object} HotSpot new position
+	*/
 	HotSpot.prototype.translate = function(position) {
 		var transform = 'translate(' + position.x + 'px, ' + position.y + 'px) translateZ(9999px)';
 		pannellum.util.domElement.setAttr(this.container, {'style': {'webkitTransform' : transform}});
 		pannellum.util.domElement.setAttr(this.container, {'style': {'MozTransform' : transform}});
 		pannellum.util.domElement.setAttr(this.container, {'style': {'transform' : transform}});
 	}
+
+	/**@namespace*/
 	pannellum.components.hotSpots.hotSpot = HotSpot;
 
 /////////////Module Content Box/////////////////
 
 	if( !pannellum.components.modules.hasOwnProperty("module") ) throw new Error("pannellum.components.modules.module class is undefined");
 
+	/**
+	 * ContentBox module Class
+	 * @class
+	 ^ @extends pannellum.components.module
+	 ^ @param {HTMLElement} The host
+	 ^ @param {HTMLElement} The host container
+	 ^ @param {object} Configuration
+	 * @property {string} name
+	 * @property {object} fields - Content fields
+	 */
 	var ContentBox = function(host, hostContainer, config) {
 		ContentBox.superclass.constructor.apply(this, arguments);
 		this.name = 'ContentBox';
@@ -415,14 +518,18 @@
 	}
 	pannellum.util.extend(ContentBox, pannellum.components.modules.module);
 
+	/**
+	* Adds fields to contentBox
+	^ @memberof ContentBox
+	* @param {array} Array of fields configurations
+	* @example
+	* [
+	* 	["field_1", { name : 'div', attributes : {'className': '...'}, content: "..." }],
+	* 	['field_2", { name : 'span', attributes : {'className': '...'} }],
+	*]
+	* @param {HTMLElement} HTML container Container for fields HTMLElements
+	*/
 	ContentBox.prototype.addFields = function(fields, container){
-		/*
-		fields format
-		[
-			["field_1", { name : 'div', attributes : {'className': '...'}, content: "..." }],
-			['field_2", { name : 'span', attributes : {'className': '...'} }],
-		]
-		 */
 		if( !fields ) return false;
 		if( !container ) container = this.container;
 		var i, fieldsLength = fields.length, fieldSettings;
@@ -434,10 +541,19 @@
 		}
 	}
 
+	/**
+	* Shows contentBox
+	^ @memberof ContentBox
+	*/
 	ContentBox.prototype.show = function(){
 		this.container.style.display = 'table';
 	}
 
+	/**
+	* Updates contentBox fields
+	^ @memberof ContentBox
+	* @param {object}
+	*/
 	ContentBox.prototype.update = function(fields){
 		if( !fields ) return false;
 		var field;
