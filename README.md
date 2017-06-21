@@ -1,5 +1,5 @@
 HTML5 panorama player
-=====================
+======================
 
 This panorama player is based on [pannellum](https://github.com/mpetroff/pannellum) project.
 
