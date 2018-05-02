@@ -38,7 +38,11 @@
 /************************************
  * VirtualInteraction class
  * Extends Interaction class
- * This is a base class for classes which are using special instructions to set panorama position. It helps to create interactions which can not obtain data from user unput, such as key press. Such interactions need predefined set of instructions to be processed and converted to panorama position: zoom and vector. Opposed to these kind of instructions are for example mouse interactions where data can be obtained right from the mouse position and converted to panorama position.
+ * This is a base class for classes which are using special instructions to set panorama position.
+ * It helps to create interactions which can not obtain data from user unput, such as key press.
+ * Such interactions need predefined set of instructions to be processed and converted to panorama
+ * position: zoom and vector. Opposed to these kind of instructions are for example mouse interactions
+ * where data can be obtained right from the mouse position and converted to panorama position.
 *************************************/
 	function VirtualInteraction() {
 		VirtualInteraction.superclass.constructor.apply(this, arguments);
@@ -50,9 +54,9 @@
 
 	VirtualInteraction.prototype.position = function( position ) {
 		//#Get currentDir position
-		var prevYaw = position.yaw;
-		var prevPitch = position.pitch;
-		var prevZoom = position.hfov;
+		var prevYaw = position.yaw || 0;
+		var prevPitch = position.pitch || 0;
+		var prevZoom = position.hfov || 0;
 		//#Get currentDir time
 		var newTime = pannellum.util.setCurrentTime();
 		//#Get currentDir latestInteraction (time)
@@ -62,6 +66,7 @@
 		var step = {yaw:0, pitch:0, hfov:0, incr:0.2};
 		var friction = 0.8;
 		var currentDir = this.getDir();
+
 		if( currentDir !== null) {
 			if( currentDir.hasOwnProperty('vector') ) {
 				step.incr = currentDir.vector.step;
@@ -79,19 +84,23 @@
 			}
 		}
 		//#Get new yaw and pitch
-		position.yaw += ( this.state.speedYaw * friction + step.yaw ) * diff;
-		position.pitch += ( this.state.speedPitch * friction + step.pitch ) * diff;
-		position.hfov += ( this.state.speedZoom * friction + step.hfov ) * diff;
+		var ssyf = this.state.speedYaw * friction,
+			sspf = this.state.speedPitch * friction,
+			sszf = this.state.speedZoom * friction;
+		position.yaw += ( ssyf + step.yaw ) * diff;
+		position.pitch += ( sspf + step.pitch ) * diff;
+		position.hfov += ( sszf + step.hfov ) * diff;
 
 		//#Get new speed
-		this.state.speedYaw = this.state.speedYaw * friction + (position.yaw - prevYaw) / diff * 0.2;
-		this.state.speedPitch = this.state.speedPitch * friction + (position.pitch - prevPitch) / diff * 0.2;
-		this.state.speedZoom = this.state.speedZoom * friction + (position.hfov - prevZoom) / diff * 0.2;
+		this.state.speedYaw = ssyf + ((position.yaw - prevYaw) / diff * 0.2 || 0);
+		this.state.speedPitch = sspf + ((position.pitch - prevPitch) / diff * 0.2 || 0);
+		this.state.speedZoom = sszf + ((position.hfov - prevZoom) / diff * 0.2 || 0);
 
 		// Limit speed
-		this.state.speedYaw = Math.min(this.state.speedMax, Math.max(this.state.speedYaw, -this.state.speedMax) );
-		this.state.speedPitch = Math.min(this.state.speedMax, Math.max(this.state.speedPitch, -this.state.speedMax) );
-		this.state.speedZoom = Math.min(this.state.speedMax, Math.max(this.state.speedZoom, -this.state.speedMax) );
+		this.state.speedYaw = Math.min(this.state.speedMax, Math.max(this.state.speedYaw, -this.state.speedMax) ) || 0;
+		this.state.speedPitch = Math.min(this.state.speedMax, Math.max(this.state.speedPitch, -this.state.speedMax) ) || 0;
+		this.state.speedZoom = Math.min(this.state.speedMax, Math.max(this.state.speedZoom, -this.state.speedMax) ) || 0;
+
 		return position;
 	}
 	pannellum.interactions.virtualInteraction = VirtualInteraction;
@@ -99,28 +108,37 @@
 /************************************
  * MouseWheelInteraction class
  * Extends VirtualInteraction class
- This class was created in order to make mouse wheel zoom interactions smoother. Direct convertion of mousewheel data to panorama position makes zooming procedure jumpy due to discrete nature of mouse wheel action. The code was simple:
- -----------------------
- //Simple example without animator
- var mwData = getMouseWheelData(event);
- var cPanorama = getPanoramaByIndex('last');
- setHfov(cPanorama.config.hfov + mwData/2);
- cPanorama.render();
- ----------------------
- To make the mousewheel interaction smooth we need more data and a bit more logic. The class is based on instructions and is extending virtual interaction. Each mousewheel scroll passes a couple or more zooming instructions to animator, those are executed immediately one by one. The more instructions we pass the tmoother the interaction could be. Zooming in and out are controlled by factor obained from the real mouse weel data.
- var factor = (getMouseWheelData(event)>0)?1:-1;
- var directions = [
-	 {zoom:0.1 * factor},
-	 {zoom:0.5 * factor},
-	 {zoom:0.9 * factor}
- ];
- TODO: To make this interaction react to mouse position while zooming there could probably be such instructions:
- // var directions = [
- // 	{zoom:0.1 * factor, vector:{dir:90 * factor, step:0.1}},
- // 	{zoom:0.5 * factor, vector:{dir:90 * factor, step:0.3}},
- // 	{zoom:0.9 * factor, vector:{dir:90 * factor, step:0.5}}
- // ];
- //Vector and step could be obtained from the moude position.
+ ^ This class was created in order to make mouse wheel zoom interactions smoother.
+ ^ Direct convertion of mousewheel data to panorama position makes zooming
+ * procedure jumpy due to discrete nature of mouse wheel action.
+ * The code was simple:
+ * -----------------------
+ * Simple example without animator
+ * var mwData = getMouseWheelData(event);
+ * var cPanorama = getPanoramaByIndex('last');
+ * setHfov(cPanorama.config.hfov + mwData/2);
+ * cPanorama.render();
+ * ----------------------
+ * To make the mousewheel interaction smooth we need more data and a bit more
+ * logic. The class is based on instructions and is extending virtual
+ * interaction. Each mousewheel scroll passes a couple or more zooming
+ * instructions to animator, those are executed immediately one by one.
+ * The more instructions we pass the thmoother the interaction could be.
+ * Zooming in and out are controlled by factor obained from the real mouse
+ * weel data.
+ * var factor = (getMouseWheelData(event)>0)?1:-1;
+ * var directions = [
+ *  {zoom:0.1 * factor},
+ *  {zoom:0.5 * factor},
+ *  {zoom:0.9 * factor}
+ * ];
+ * TODO: To make this interaction react to mouse position while zooming there could probably be such instructions:
+ * // var directions = [
+ * // 	{zoom:0.1 * factor, vector:{dir:90 * factor, step:0.1}},
+ * // 	{zoom:0.5 * factor, vector:{dir:90 * factor, step:0.3}},
+ * // 	{zoom:0.9 * factor, vector:{dir:90 * factor, step:0.5}}
+ * // ];
+ * //Vector and step could be obtained from the moude position.
 *************************************/
 	function MouseWheelInteraction() {
 		MouseWheelInteraction.superclass.constructor.call(this);

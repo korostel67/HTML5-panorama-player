@@ -704,8 +704,13 @@
 			};
 			var animate = function() {
 				if(cInteraction==null && cPanorama==null) return false;
-				var pos=cInteraction.position( {yaw:cPanorama.config.yaw, pitch:cPanorama.config.pitch, hfov:cPanorama.config.hfov} );
-				if(pos == null ) {
+				var pos = cInteraction.position({
+					yaw:cPanorama.config.yaw,
+					pitch:cPanorama.config.pitch,
+					hfov:cPanorama.config.hfov
+				});
+
+				if(pos == null) {
 					stop();
 					console.log('animator.stop');
 					return false;
