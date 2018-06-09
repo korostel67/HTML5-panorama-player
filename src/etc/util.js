@@ -516,7 +516,8 @@ Util.mathD = function() {
 		},
 		atan: function(number){
 			return roundNumber(toDegree(Math.atan(number)));
-		}
+		},
+    round: roundNumber
 	};
 }();
 

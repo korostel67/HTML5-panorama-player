@@ -7,7 +7,7 @@
  * Interaction class
  ^ This is a base class for all kind of interactions could occure during panorama playing. The main job of interactions is to transform data obtained somehow from user actions into new panorama position. Interaction can not change panorama position directly. It can only pass the new panorama position to animator class which is responsible for panorama position update.
  Here presented two kind of instruction subclasses. One can obtain data directly from user input (such as mouse position). The second - virtual interaction - which are using predefined data sets to controll panorama position. They can not get data from user input such as mouse position (for ex. key press or arbitrary panorama animations).
- Interactions work together with animator class. The former creates new panorama position the latter puts it to panorama and makes rendering.
+ Interactions work together with animator class. The former creates new panorama position the latter puts itto panorama and makes rendering.
 *************************************/
 	function Interaction() {
 		this.name = 'Interaction';
@@ -17,15 +17,24 @@
 			speedYaw:			0,
 			speedPitch:		0,
 			speedZoom:		0,
-			speedMin:			0.01,
+			speedMin:			0.1,
 			speedMax:			5,
 			interacting:	false
 		};
+		this.currentPosition = null;
+	}
+	Interaction.prototype.clear = function() {
+		this.state.latestInteraction	= null;
+		this.state.speedYaw						= 0;
+		this.state.speedPitch					= 0;
+		this.state.speedZoom					= 0;
 	}
 	Interaction.prototype.start = function() {
+		this.clear();
 		this.state.interacting = true;
 	}
 	Interaction.prototype.stop = function() {
+		this.clear();
 		this.state.interacting = false;
 	}
 	Interaction.prototype.update = function() {return null;}
@@ -54,6 +63,7 @@
 
 	VirtualInteraction.prototype.position = function( position ) {
 		//#Get currentDir position
+		this.currentPosition = position;
 		var prevYaw = position.yaw || 0;
 		var prevPitch = position.pitch || 0;
 		var prevZoom = position.hfov || 0;
@@ -67,16 +77,22 @@
 		var friction = 0.8;
 		var currentDir = this.getDir();
 
-		if( currentDir !== null) {
+		if( currentDir !== null ) {
 			if( currentDir.hasOwnProperty('vector') ) {
 				step.incr = currentDir.vector.step;
 				step.yaw = pannellum.util.mathD.sin(currentDir.vector.dir)*step.incr;
 				step.pitch = pannellum.util.mathD.cos(currentDir.vector.dir)*step.incr;
 			}
+			if( currentDir.hasOwnProperty('point') ) {
+				step.incr = currentDir.point.step;
+				step.yaw = (prevYaw - currentDir.point.yaw)/step.incr;
+				step.pitch = (prevPitch - currentDir.point.pitch)/step.incr;
+			}
 			if( currentDir.hasOwnProperty('zoom') ) {
 				step.hfov = -currentDir.zoom;
 			}
 		}else{
+			return null;
 			if( Math.abs(this.state.speedYaw) < this.state.speedMin &&
 				Math.abs(this.state.speedPitch) < this.state.speedMin &&
 				Math.abs(this.state.speedZoom) < this.state.speedMin ) {
@@ -182,9 +198,12 @@
 /************************************
  * AutoInteraction class
  * Extends VirtualInteraction class
- Virtual interaction could be used to create autorotation animation. The movement of panorama coulbe predefined by a set of instructions passed to constructor. Each instruction can contain vector, zoom and execution time.
+ * Virtual interaction could be used to create autorotation animation.
+ * The movement of panorama could be predefined by a set of instructions passed
+ * to constructor. Each instruction can contain vector, zoom and execution time.
 
- TODO: Implement another kind of instruction wich will let us move panorama to a special point< for example to a hotspot.
+ * TODO: Implement another kind of instruction wich will let us move panorama
+ * to a special point, for example to a hotspot.
 *************************************/
 	function AutoInteraction(directions) {
 		AutoInteraction.superclass.constructor.apply(this, arguments);
@@ -197,6 +216,7 @@
 
 		this.changeDir = function() {
 			this.state.latestInteraction = pannellum.util.setCurrentTime();
+			//console.log('t|changeDir->changeDir');
 			var dur, _this = this;
 			if( LastUpdated ) window.clearTimeout( LastUpdated );
 			if( DirIndex > DirectionsLength-1 ) {
@@ -208,26 +228,59 @@
 			}
 			CurDir=Directions[ DirIndex ];
 			DirIndex++;
-			dur = ( CurDir.hasOwnProperty('dur') ) ? CurDir.dur : AnimFrame;
-			LastUpdated = setTimeout( function() {
-				//console.log('t|changeDir->changeDir');
-				_this.changeDir();
-			}, dur );
+			/*
+			var directions_1 = [
+				{ point: {yaw:135, pitch: 0, step:0.3} },
+				{ point: {yaw:-50, pitch: 0, step:0.3} },
+			];
+			*/
+			// if( CurDir.hasOwnProperty('point')) {
+			// 	// Calculate vector having point properties
+			// 	var factor = (CurDir.point.yaw >= 0 && 180 >= CurDir.point.yaw) ? 1 : -1;
+			// 	//var dir = 90 * factor;
+			// 	var mathD = pannellum.util.mathD;
+			// 	var dir = mathD.acos(
+			// 	  mathD.tan( CurDir.point.yaw ) / mathD.tan(mathD.acos( mathD.cos(CurDir.point.pitch) * mathD.cos(CurDir.point.yaw) ))
+			// 	) * factor;
+			// 	console.log (dir)
+			// 	CurDir.vector = {dir:dir, step: CurDir.point.step}
+			// }else{
+			if( CurDir.hasOwnProperty('vector')) {
+				dur = ( CurDir.hasOwnProperty('dur') ) ? CurDir.dur : AnimFrame;
+				LastUpdated = setTimeout( function() {
+					//console.log('t|changeDir->changeDir');
+					_this.changeDir();
+				}, dur );
+			}
 		}
+
 		this.addDir = function(dir) {
 			Directions.push( dir );
 			DirectionsLength = Directions.length;
 		}
+
 		this.getDir = function() {
 			if( typeof CurDir == 'undefined' ) {
 				this.changeDir();
 			}
+			if( CurDir !== null && CurDir.hasOwnProperty('point') ) {
+				var yav = Math.round(this.currentPosition.yaw);
+				var pitch = Math.round(this.currentPosition.pitch);
+				if(
+					(CurDir.point.yaw >= 0 && 180 >= CurDir.point.yaw && yav >= CurDir.point.yaw) ||
+					(CurDir.point.yaw < 0 && -180 < CurDir.point.yaw && yav <= CurDir.point.yaw)
+				) {
+					this.changeDir();
+				}
+			}
 			return CurDir;
 		}
+
 		this.clearDir = function() {
 			Directions = [];
 			DirectionsLength = Directions.length;
 		}
+
 		this.dirIndex = function(index){
 			if( typeof index == 'number' ) {
 				if( index > DirectionsLength-1 || index < 0 ) index=0;
@@ -241,13 +294,13 @@
 
 	AutoInteraction.prototype.start = function() {
 		AutoInteraction.superclass.start.call(this);
-		//this.clearDir();
 		this.dirIndex( this.dirIndex() );
 		this.changeDir();
 	}
+
 	AutoInteraction.prototype.stop = function() {
 		AutoInteraction.superclass.stop.call(this);
-		//this.clearDir(); //Commented, as it clears all instructions and  interaction can not start again without them.
+		this.dirIndex( 0 );
 	}
 
 	pannellum.interactions.autoInteraction = AutoInteraction;

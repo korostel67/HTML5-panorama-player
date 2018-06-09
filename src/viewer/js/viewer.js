@@ -533,9 +533,9 @@ console.log(Config.settings)
 		///Special MouseWheelInteraction
 		var factor = (getMouseWheelData(event)>0)?1:-1;
 		var directions = [
-			{zoom:0.1 * factor},
+			//{zoom:0.1 * factor},
 			{zoom:0.5 * factor},
-			{zoom:0.9 * factor}
+			{zoom:1 * factor}
 		];
 		// var directions = [
 		// 	{zoom:0.1 * factor, vector:{dir:90 * factor, step:0.1}},
@@ -791,6 +791,13 @@ console.log(Config.settings)
 				{ vector: {dir:135, step:0.5}, dur:1000 },
 				{zoom: 0.2, dur:3000 },
 				{zoom: -0.2, dur:3000 },
+				{ point: {yaw:135, pitch: 3, zoom: 1}, step:0.5 }
+			];
+			var directions_1 = [
+				//{ vector: {dir:90, step:0.5}, zoom: 0.5, dur:1000 },
+				{ point: {yaw:-30, pitch: 0, step:0.3} },
+				//{ point: {yaw:-50, pitch: -20, step:0.3} },
+				// {zoom: 0.2, dur:3000 },
 			];
 
 			if( pannellum.animator.getInteraction() == null ) {
@@ -801,6 +808,7 @@ console.log(Config.settings)
 				}else{
 					cInteraction = InteractionsCollection.item('AutoInteraction');
 				}
+
 				cInteraction.start();
 				pannellum.animator.start(
 					cInteraction,
