@@ -484,12 +484,12 @@
 			document.addEventListener('mouseleave', onDocumentMouseUp, false);
 			Container.addEventListener('mousewheel', onDocumentMouseWheel, false);
 			Container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
-			/*
+
 			Container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
 			Container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
 			Container.addEventListener('msfullscreenchange', onFullScreenChange, false);
 			Container.addEventListener('fullscreenchange', onFullScreenChange, false);
-			*/
+			
 			window.addEventListener('resize', onDocumentResize, false);
 			Container.addEventListener('keydown', onDocumentKeyPress, false);
 			Container.addEventListener('keyup', onDocumentKeyUp, false);
@@ -900,6 +900,39 @@
 			pannellum.eventBus.dispatch("fullscreen_change", null, { active : ViewerState.fullscreenActive() });
 		}
 
+
+			/**
+			 * Toggles fullscreen mode.
+			 * @private
+			 */
+			this.toggleFullscreen = function() {
+	        if (!this.viewerState.fullscreenActive()) {
+	            try {
+	                if (Container.requestFullscreen) {
+	                    Container.requestFullscreen();
+	                } else if (Container.mozRequestFullScreen) {
+	                    Container.mozRequestFullScreen();
+	                } else if (Container.msRequestFullscreen) {
+	                    Container.msRequestFullscreen();
+	                } else {
+	                    Container.webkitRequestFullScreen();
+	                }
+	            } catch(event) {
+	                // Fullscreen doesn't work
+	            }
+	        } else {
+	            if (document.exitFullscreen) {
+	                document.exitFullscreen();
+	            } else if (document.mozCancelFullScreen) {
+	                document.mozCancelFullScreen();
+	            } else if (document.webkitCancelFullScreen) {
+	                document.webkitCancelFullScreen();
+	            } else if (document.msExitFullscreen) {
+	                document.msExitFullscreen();
+	            }
+	        }
+			}
+
 		/**
 		 * Gets panorama object from PartsCollection["panoramas"]
 		 * by it's index in the RenderContainer.
@@ -978,6 +1011,7 @@
 		}();
 		pannellum.errorMessage = ErrorMessage.getInstance();
 	}
+
 	pannellum.viewer = function() { return new Viewer(settings); }
 
 
