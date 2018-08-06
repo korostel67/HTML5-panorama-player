@@ -6,7 +6,7 @@
 	"maxPitch":10,
 	"yaw": 0,
 	"type": "equirectangular",
-	"panorama": "data/panoramas/rostov_5/img/rostov_5.jpg",
+	"panorama": "https://pannellum.org/images/alma.jpg",
 	"hotSpotDebug":true,
 	"transition": {"type": "cssFade", "settings": {"duration": 2000 }},
 	"hotSpots": [

@@ -133,45 +133,60 @@
 					pannellum.partsLoader.addParts(
 						"components",
 						["component"]).then(
-						function(result) {
-							if( !result ) throw new pannellum.customErrors.notFoundError('Something wrong with components class loading');
-							//Load styles
-							pannellum.util.domElement.create({ name : "link", attributes : { href:"src/viewer/css/styles.css" } }, document.head );
-							//Import InitialConfig initial structure
-							Object.deepExtend( Config.settings, InitialConfig );
-							//Update Config.settings with QueryVars
-							QueryVars = pannellum.util.httpGetQueryVars();
-							if( !Object.isEmpty(QueryVars) ) {
-								if( QueryVars.hasOwnProperty("settings") ) {
-									Config.settings.require = { id : QueryVars.settings, mode : "replace" }
-								}
-								if( QueryVars.hasOwnProperty("set") ) {
-									Config.settings.set.require = { id : QueryVars.set, mode : "replace" }
-								}
-							}
-							//var sourcesList = ["require","set.require"];
-							var sourcesList = [
-								{
-									"require" :	function() { return ((Config.settings.require)? Config.dataDir.settings + Config.settings.require.id : null ); },
-									"callback" :	function(request) {
-										if(request && request.response) Object.deepExtend(Config.settings, request.response );
+							function(result) {
+								if( !result ) throw new pannellum.customErrors.notFoundError('Something wrong with components class loading');
+								//Load styles
+								pannellum.util.domElement.create({ name : "link", attributes : { href:"src/viewer/css/styles.css" } }, document.head );
+								//Import InitialConfig initial structure
+								Object.deepExtend( Config.settings, InitialConfig );
+								//Update Config.settings with QueryVars
+								QueryVars = pannellum.util.httpGetQueryVars();
+								if( !Object.isEmpty(QueryVars) ) {
+									//Settings received via query string have the highest priority.
+									//They replace all settings.
+									if( QueryVars.hasOwnProperty("settings") ) {
+										Config.settings.require = { id : QueryVars.settings, mode : "replace" }
 									}
-								},{
-									"require" :	function() { return ((Config.settings.set.require)? Config.dataDir.set + Config.settings.set.require.id : null ); },
-									"callback" :	function(request) {
-										if(request && request.response) Object.deepExtend(Config.settings.set, request.response );
+									if( QueryVars.hasOwnProperty("set") ) {
+										Config.settings.set.require = { id : QueryVars.set, mode : "replace" }
 									}
-								},{
-									"callback" :	init
 								}
-							];
-							//Require settings if any "require" directives are set
-							requireSettings(sourcesList);
-					},
-					function(msg){
-						console.log(msg)
-						throw new pannellum.customErrors.notFoundError(msg);
-					});
+								//var sourcesList = ["require","set.require"];
+								var sourcesList = [
+									{
+										"require" :	function() { return ((Config.settings.require)? Config.dataDir.settings + Config.settings.require.id : null ); },
+										"callback" :	function(request) {
+											if(request && request.response) {
+												if(Config.settings.require && Config.settings.require.mode && Config.settings.require.mode === 'replace') {
+													Config.settings = request.response;
+												}else{
+													Object.deepExtend(Config.settings, request.response);
+												}
+											}
+										}
+									},{
+										"require" :	function() { return ((Config.settings.set.require)? Config.dataDir.set + Config.settings.set.require.id : null ); },
+										"callback" :	function(request) {
+											if(request && request.response) {
+												if(Config.settings.set.require && Config.settings.set.require.mode && Config.settings.set.require.mode === 'replace') {
+													Config.settings.set = request.response;
+												}else{
+													Object.deepExtend(Config.settings.set, request.response);
+												}
+											}
+										}
+									},{
+										"callback" :	init
+									}
+								];
+								//Require settings if any "require" directives are set
+								requireSettings(sourcesList);
+						},
+						function(msg){
+							console.log(msg)
+							throw new pannellum.customErrors.notFoundError(msg);
+						}
+					);
 				}catch(e){
 					console.log( e.name, e.message, e.stack );
 				}
@@ -281,7 +296,13 @@
 				{
 					"require" : function() { return ((panoSettings.require)? Config.dataDir.panoramas + panoSettings.require.id : null ); },
 					"callback" : function(request) {
-						if(request && request.response) Object.deepExtend( panoSettings, request.response );
+						if(request && request.response) {
+							if(panoSettings.require.mode && panoSettings.require.mode === 'replace') {
+								Config.settings.set = request.response;
+							}else{
+								Object.deepExtend(panoSettings, request.response);
+							}
+						}
 						if( !pannellum.components.hasOwnProperty( "panoramas" ) ) pannellum.components.panoramas = {};
 						if( pannellum.components.panoramas.hasOwnProperty( panoSettings.type ) ) {
 							panoObject = getNewPanoramaInstance(panoId, panoSettings);
@@ -299,7 +320,6 @@
 								function(msg){
 									throw new pannellum.customErrors.notFoundError(msg);
 								}
-
 							);
 						}
 					}
@@ -489,7 +509,7 @@
 			Container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
 			Container.addEventListener('msfullscreenchange', onFullScreenChange, false);
 			Container.addEventListener('fullscreenchange', onFullScreenChange, false);
-			
+
 			window.addEventListener('resize', onDocumentResize, false);
 			Container.addEventListener('keydown', onDocumentKeyPress, false);
 			Container.addEventListener('keyup', onDocumentKeyUp, false);
@@ -901,37 +921,37 @@
 		}
 
 
-			/**
-			 * Toggles fullscreen mode.
-			 * @private
-			 */
-			this.toggleFullscreen = function() {
-	        if (!this.viewerState.fullscreenActive()) {
-	            try {
-	                if (Container.requestFullscreen) {
-	                    Container.requestFullscreen();
-	                } else if (Container.mozRequestFullScreen) {
-	                    Container.mozRequestFullScreen();
-	                } else if (Container.msRequestFullscreen) {
-	                    Container.msRequestFullscreen();
-	                } else {
-	                    Container.webkitRequestFullScreen();
-	                }
-	            } catch(event) {
-	                // Fullscreen doesn't work
-	            }
-	        } else {
-	            if (document.exitFullscreen) {
-	                document.exitFullscreen();
-	            } else if (document.mozCancelFullScreen) {
-	                document.mozCancelFullScreen();
-	            } else if (document.webkitCancelFullScreen) {
-	                document.webkitCancelFullScreen();
-	            } else if (document.msExitFullscreen) {
-	                document.msExitFullscreen();
-	            }
-	        }
-			}
+		/**
+		 * Toggles fullscreen mode.
+		 * @private
+		 */
+		this.toggleFullscreen = function() {
+        if (!this.viewerState.fullscreenActive()) {
+            try {
+                if (Container.requestFullscreen) {
+                    Container.requestFullscreen();
+                } else if (Container.mozRequestFullScreen) {
+                    Container.mozRequestFullScreen();
+                } else if (Container.msRequestFullscreen) {
+                    Container.msRequestFullscreen();
+                } else {
+                    Container.webkitRequestFullScreen();
+                }
+            } catch(event) {
+                // Fullscreen doesn't work
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitCancelFullScreen) {
+                document.webkitCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+		}
 
 		/**
 		 * Gets panorama object from PartsCollection["panoramas"]
