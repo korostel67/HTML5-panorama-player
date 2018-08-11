@@ -103,8 +103,8 @@ pannellum.components.panoramas.panorama = Panorama;
 //## WebGL, CSS3
 //## CM, MR, EQ, VD
 Panorama.prototype.destroy = function() {
-	if (this.hostContainer !== undefined) return false;
-	if (this.container !== undefined) return false;
+	if (this.hostContainer === undefined) return false;
+	if (this.container === undefined) return false;
 	if (this.canvas !== undefined) this.container.removeChild(this.canvas);
 	if (this.world !== undefined) this.container.removeChild(this.world);
 	this.hotSpotsCollection.destroy();
@@ -143,7 +143,6 @@ Panorama.prototype.createHotspots = function() {
 		"components.hotSpots",
 		this.config.hotSpots
 	).then(function(result) {
-console.log('loading hotspots');
 		if( !This.hotSpotsCollection ) This.hotSpotsCollection = new pannellum.collections.hotSpotsCollection(This, This.container);
 		if( !pannellum.components.hasOwnProperty( 'hotSpots' ) ) pannellum.components['hotSpots'] = {}
 		var hsLength = This.config.hotSpots.length;

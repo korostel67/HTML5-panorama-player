@@ -282,7 +282,6 @@
 		this.hostContainer = hostContainer;
 		this.container = pannellum.util.domElement.create({ name : "div", attributes : {"display":"none","className": "pnlm-component"}}, this.hostContainer);
 		this.config = {};
-
 		/** @namespace */
 		this.state = function() {
 			var locked = false;
@@ -421,9 +420,9 @@
 			yaw : pannellum.dataTypes.dtNumber({ min: -360, max: 360, default: 0 }),
 			pitch : pannellum.dataTypes.dtNumber({ min: -85, max: 85, default: 0 }),
 			info : pannellum.dataTypes.dtString({ min: 0, max: 30, strict: false }),
-			sceneId : pannellum.dataTypes.dtString({ min: 10, max: 30, strict: false }),
-			targetYaw :  pannellum.dataTypes.dtString({ min: 10, max: 30, pattern: /^(-?[0-9]*)$|^same$|^sameAzimuth$/, default: "0" }),
-			targetPitch :  pannellum.dataTypes.dtString({ min: 10, max: 30, pattern: /^(-?[0-9]*)$|^same$/, default: "0" }),
+			sceneId : pannellum.dataTypes.dtString({ min: 2, max: 30, strict: false }),
+			targetYaw :  pannellum.dataTypes.dtString({ min: 1, max: 30, pattern: /^-?[0-9]*|same|sameAzimuth$/, default: "0" }),
+			targetPitch :  pannellum.dataTypes.dtString({ min: 1, max: 30, pattern: /^-?[0-9]|same$/, default: "0" }),
 		}
 		this.checkConfig(config, dataTypes);
 		pannellum.util.domElement.setAttr(this.container, { 'className' : ((this.container.className) ? this.container.className + ' ' : '') + 'pnlm-hotspot pnlm-tooltip pnlm-sprite' });

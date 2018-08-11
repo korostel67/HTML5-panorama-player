@@ -104,24 +104,31 @@
 		pannellum.eventBus.addEventListener("pano_initialized", function(event) {
 			if( typeof event.dispatcher != 'undefined' ) {
 				var panoObjest = PartsCollection["panoramas"].item(event.dispatcher.panoId);
-				/*
+
 				// Start Transitions
-				var pano_0 = getPanoramaByIndex('last');
-				if( pano_0 && config.current.transition &&
-					config.transitions.hasOwnProperty(config.current.transition) &&
-					//pannellum.transitions.hasOwnProperty(pano_0.config.transition) &&
-					pano_0.panoId != event.dispatcher.panoId ) {
-					// Start the transition
-					pannellum.eventBus.dispatch('transition_' + config.current.transition, this, config.transitions[config.current.transition] );
-					return false;
-				}
+				var pano_0 = getPanoramaByIndex(0);
+				// if( pano_0 && config.current.transition &&
+				// 	config.transitions.hasOwnProperty(config.current.transition) &&
+				// 	//pannellum.transitions.hasOwnProperty(pano_0.config.transition) &&
+				// 	pano_0.panoId != event.dispatcher.panoId ) {
+				// 	// Start the transition
+				// 	pannellum.eventBus.dispatch('transition_' + config.current.transition, this, config.transitions[config.current.transition] );
+				// 	return false;
+				// }
 				// We have no transitions defined
-				if( pano_0 !== null && pano_0.panoId !== event.dispatcher.panoId ) { pano_0.destroy(); pano_0 = undefined; }
+				if( pano_0 !== null && pano_0.panoId !== event.dispatcher.panoId ) {
+					pano_0.destroy();
+					pano_0 = undefined;
+				}
 				// End Transitions
-				*/
+
 		 		ViewerState.unlock();
 		 		panoObjest.render();
 			}
+		}, this);
+
+		pannellum.eventBus.addEventListener("panorama_to_load", function(event, prop) {
+		  loadPanorama( prop.panoId );
 		}, this);
 
 		// Load required files
@@ -262,8 +269,10 @@
 			// - check if panorama has already been initialized (can be found in the panoramas collection)
 			var panoObject = PartsCollection["panoramas"].item(panoId);
 			// if yes
-			if( panoObject ) { startPanorama(panoObject); return true; }
-
+			if( panoObject ) {
+				invokePanoObject(panoObject);
+				return true;
+			}
 			// if not:
 			// - get panorama settings from Config.settings.set.panoramas[panoId]
 			// if there are any
@@ -284,8 +293,7 @@
 						if(request && request.response) Object.deepExtend( panoSettings, request.response );
 						if( !pannellum.components.hasOwnProperty( "panoramas" ) ) pannellum.components.panoramas = {};
 						if( pannellum.components.panoramas.hasOwnProperty( panoSettings.type ) ) {
-							panoObject = getNewPanoramaInstance(panoId, panoSettings);
-							startPanorama(panoObject);
+							panoObject = createPanoObject(panoId, panoSettings);
 						}else{
 							// - if there are no panorama type class in the system
 							// - - load appropriate type
@@ -293,13 +301,11 @@
 								"components.panoramas",
 								[panoSettings.type]).then(
 								function() {
-									panoObject = getNewPanoramaInstance(panoId, panoSettings);
-									startPanorama(panoObject);
+									panoObject = createPanoObject(panoId, panoSettings);
 								},
 								function(msg){
 									throw new pannellum.customErrors.notFoundError(msg);
 								}
-
 							);
 						}
 					}
@@ -308,7 +314,29 @@
 			//Require settings if any "require" directives are set
 			// - if there is a require directive
 			// - - load settings and update Config.settings.set.panoramas[panoId] settings
-			requireSettings(sourcesList);
+			if(panoSettings.hasOwnProperty('require')) {
+				requireSettings(sourcesList);
+			}else{
+				sourcesList[0].callback(null);
+			}
+		}
+
+		/**
+		 * Invoke previously created panorama object
+		 * The function is intended to start functioning initialized earlier panorama. In case we are trying
+		 * to show previously played panorama, it's oject could be taken from PartsCollection["panoramas"].
+		 * Constructing and starting panoramas should be differed. We need to have possobility to start constructed earlier panorama.
+		 * @TODO Set new pointing using previous panorama settings
+		 *
+		 * @private
+		 * @param {Object} Panorama object
+		 */
+		function invokePanoObject(panoObject) {
+			panoObject.container.appendChild(panoObject.canvas);
+			panoObject.container.appendChild(panoObject.hotSpotsCollection.container)
+			panoObject.createHotspots();
+			panoObject.hostContainer.appendChild(panoObject.container);
+			pannellum.eventBus.dispatch("pano_initialized", panoObject);
 		}
 
 		/**
@@ -318,7 +346,7 @@
 		 * @param {String} Panorama settings.
 		 * @returns {Object} Panorama object
 		 */
-		function getNewPanoramaInstance(panoId, panoSettings) {
+		function createPanoObject(panoId, panoSettings) {
 			try{
 				if( !panoId )  throw new Error("Panorama id is not defoned");
 				if( !panoSettings )  throw new Error("Panorama settings are not defoned");
@@ -333,27 +361,10 @@
 						panoSettings
 					)
 				);
-				var panoObjest = PartsCollection["panoramas"].item(panoId);
-				return panoObjest;
+				return PartsCollection["panoramas"].item(panoId);
 			}catch(e){
 				pannellum.errorMessage.show( "messageBox", e.name, "Invalid settings in \"set.panoramas." + panoSettings.type + "." + panoId + "\" section: " + e.message );
 			}
-		}
-
-		/**
-		 * Starts panorama.
-		 * The function is intended to start functioning initialized earlier panorama. In case we are trying
-		 * to show previously played panorama, it's oject could be taken from PartsCollection["panoramas"].
-		 * Constructing and starting panoramas should be differed. We need to have possobility to start constructed earlier panorama.
-		 * TODO: This function doesn't work now. Make it wor as intended.
-		 * @private
-		 * @param {object} Panorama object to be started.
-		 */
-		function startPanorama(panoObject) {
-			// Set new pointing using previous panorama settings
-			// panoObject.load();
-			//console.log(panoObject);
-			console.log("doneIt");
 		}
 
 		/**
@@ -489,7 +500,7 @@
 			Container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
 			Container.addEventListener('msfullscreenchange', onFullScreenChange, false);
 			Container.addEventListener('fullscreenchange', onFullScreenChange, false);
-			
+
 			window.addEventListener('resize', onDocumentResize, false);
 			Container.addEventListener('keydown', onDocumentKeyPress, false);
 			Container.addEventListener('keyup', onDocumentKeyUp, false);

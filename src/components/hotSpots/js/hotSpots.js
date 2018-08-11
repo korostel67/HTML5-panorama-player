@@ -11,13 +11,14 @@
 
 		var span = this.container.childNodes[0];
 		if ( this.config.hasOwnProperty('sceneId') && this.config.sceneId ) {
+			var This = this;
 			this.container.onclick = function() {
-				if( This.hotspotState.locked() ) return false;
+				//if( This.hotspotState.locked() ) return false;
 				pannellum.eventBus.dispatch( "panorama_to_load", This, {panoId : This.config.sceneId, targetPitch : This.config.targetPitch, targetYaw : This.config.targetYaw} );
 				return false;
 			};
 			this.container.ontouchend = function() {
-				if( This.hotspotState.locked() ) return false;
+				//if( This.hotspotState.locked() ) return false;
 				pannellum.eventBus.dispatch( "panorama_to_load", This, {panoId : This.config.sceneId, targetPitch : This.config.targetPitch, targetYaw : This.config.targetYaw} );
 				return false;
 			};
@@ -26,7 +27,7 @@
 		}
 	}
 	pannellum.util.extend(PanoramaHotSpot, pannellum.components.hotSpots.hotSpot);
-	
+
 	pannellum.components.hotSpots.panorama = PanoramaHotSpot;
 
 	/////// LinkHotSpot Class ///////

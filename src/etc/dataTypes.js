@@ -93,7 +93,6 @@
 			if(this.strict) throw new pannellum.customErrors.dataTypeError( "The value length is more then max ("+this.max+") number of characters." );
 			value = (this.default !== null) ? this.default : "";
 		}
-
 		if( this.pattern && !this.pattern.test(value) ) {
 			if(this.strict) throw new pannellum.customErrors.dataTypeError( "The value \"" + value + "\" doesn\'t match the pattern." );
 			value = (this.default !== null) ? this.default : "";
