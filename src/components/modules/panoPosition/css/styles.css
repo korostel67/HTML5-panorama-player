@@ -1,0 +1,61 @@
+.pnlm-module-panoPosition {
+	display: none;
+	position: absolute;
+	top:0; left:0; bottom:0; left:0;
+	margin:0; padding:0;
+	width:100%; height:100%;
+}
+
+.pnlm-module-panoPosition .pnlm-box {
+		position: absolute;
+    bottom: 4px;
+    margin-bottom: 3px;
+    padding-left: 5px;
+    padding-right: 10px;
+    width: 200px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 0px 3px 3px 0px;
+    font-size: 12px;
+    text-align: left;
+    color: #fff;
+}
+
+.pnlm-module-panoPosition .pnlm-title-box {
+    position: relative;
+    font-size: 20px;
+    display: table;
+    padding-left: 5px;
+    margin-bottom: 3px;
+}
+
+.pnlm-module-panoPosition .pnlm-info-box {
+    position: relative;
+    font-size: 12px;
+    display: table;
+    padding-left: 5px;
+}
+
+.pnlm-module-panoPosition-pnlm-crossChar {
+    position: absolute;
+		margin:-15px 0 0 -15px; padding:0;
+		top:50%; left:50%;
+		width:31px; height:31px;
+		border:1px solid #000;
+		background-color: rgba(255, 255, 255, 0.44);
+}
+
+.pnlm-module-panoPosition-pnlm-crossChar .vline {
+    position: absolute;
+		margin:0; padding:0;
+		top:-6px; left:15px;
+		width:0px; height:41px;
+		border-left:1px solid #000;
+}
+
+.pnlm-module-panoPosition-pnlm-crossChar .hline {
+    position: absolute;
+		margin:0; padding:0;
+		top:14px; left:-6px;
+		height:0px; width:41px;
+		border-top:1px solid #000;
+}

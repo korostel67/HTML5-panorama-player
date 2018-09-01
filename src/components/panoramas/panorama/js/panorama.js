@@ -154,11 +154,15 @@ Panorama.prototype.createHotspots = function() {
 				if( !This.hotSpotsCollection.item( hsSettings.name ) && pannellum.components['hotSpots'].hasOwnProperty( hsSettings.name ) ) {
 					try{
 						This.hotSpotsCollection.add( hsSettings );
+						This.hotSpotsCollection.item( hsSettings );
 					}catch(e){
 						pannellum.errorMessage.show( "messageBox", e.name, "Invalid settings in \"set.panoramas." + This.panoId + ".hotSpots[" + i + "]\". " + e.message );
 					}
 				}
 			}
+		}
+		pannellum.eventBus.dispatch("HotSpotsCollection:ready", this);
+		if( hsLength > 0 ) {
 			This.translateHotspots();
 		}
 	//	This.resize();
@@ -191,11 +195,13 @@ Panorama.prototype.render = function() {
 	// Ensure the calculated pitch is within min and max allowed
 	this.config.pitch = Math.max(this.config.minPitch, Math.min(this.config.maxPitch, this.config.pitch));
 	this.translateHotspots();
+	pannellum.eventBus.dispatch("panorama:render", this);
 }
 
 /**
  * Sets viewer's horizontal field of view.
- * @private
+ * @public
+ * @memberof panorama
  * @param {number} hfov - Desired horizontal field of view in degrees.
  */
 Panorama.prototype.setHfov = function (hfov) {
@@ -218,6 +224,22 @@ Panorama.prototype.setHfov = function (hfov) {
 		}
 }
 
+/**
+ * Gets viewer's horizontal field of view.
+ * @public
+ * @memberof panorama
+ * @returns {number}
+ */
+Panorama.prototype.getHfov = function () {
+		return this.config.hfov;
+}
+
+/**
+ * Sets panorama's yaw.
+ * @public
+ * @memberof panorama
+ * @param {number} yaw
+ */
 Panorama.prototype.setYaw = function (yaw) {
 	if( typeof yaw == 'undefined' ) return false;
 	if (yaw > 180) {
@@ -229,9 +251,66 @@ Panorama.prototype.setYaw = function (yaw) {
 	this.config.yaw = Math.max(this.config.minYaw, Math.min(this.config.maxYaw, yaw));
 }
 
+/**
+ * Gets panorama's title.
+ * @public
+ * @memberof panorama
+ * @returns {string}
+ */
+Panorama.prototype.getTitle = function () {
+	return this.config.title;
+}
+
+/**
+ * Gets viewer's yaw.
+ * @public
+ * @memberof panorama
+ * @returns {number}
+ */
+Panorama.prototype.getYaw = function () {
+	return this.config.yaw;
+}
+
+/**
+ * Sets panorama's pitch.
+ * @public
+ * @memberof panorama
+ * @param {number} pitch
+ */
 Panorama.prototype.setPitch = function (pitch) {
 	if( typeof pitch == 'undefined' ) return false;
 	this.config.pitch = Math.max(this.config.minPitch, Math.min(this.config.maxPitch, pitch));
+}
+
+/**
+ * Gets panorama's pitch.
+ * @public
+ * @memberof panorama
+ * @returns {number}
+ */
+Panorama.prototype.getPitch = function () {
+	return this.config.pitch;
+}
+
+/**
+ * Sets panorama's north offset.
+ * @public
+ * @memberof panorama
+ * @param {number} pitch
+ */
+Panorama.prototype.setNorthOffset = function (northOffset) {
+	if( typeof northOffset == 'undefined' ) return false;
+	this.config.northOffset = northOffset;
+}
+
+/**
+ * Gets panorama's north offset.
+ * @public
+ * @memberof panorama
+ * @returns {number}
+ */
+Panorama.prototype.getNorthOffset = function () {
+	return this.config.northOffset;
 }
 
 }(window.pannellum || (window.pannellum={}), document));

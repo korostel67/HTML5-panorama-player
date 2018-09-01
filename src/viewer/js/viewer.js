@@ -116,7 +116,7 @@
 				// 	return false;
 				// }
 				// We have no transitions defined
-				if( pano_0 !== null && pano_0.panoId !== event.dispatcher.panoId ) {
+				if( pano_0 !== null && pano_0.panoId !== panoObjest.panoId ) {
 					pano_0.destroy();
 					pano_0 = undefined;
 				}
@@ -128,7 +128,7 @@
 		}, this);
 
 		pannellum.eventBus.addEventListener("panorama_to_load", function(event, prop) {
-		  loadPanorama( prop.panoId );
+		  loadPanorama( prop.panoId, prop );
 		}, this);
 
 		// Load required files
@@ -263,16 +263,19 @@
 		 * @private
 		 * @param {string} Panorama ID to be loaded.
 		 */
-		function loadPanorama(panoId) {
+		function loadPanorama(panoId, newPointing) {
 			ViewerState.lock();
 			//Options:
 			// - check if panorama has already been initialized (can be found in the panoramas collection)
+
 			var panoObject = PartsCollection["panoramas"].item(panoId);
 			// if yes
 			if( panoObject ) {
+				setNewPointing(panoObject, newPointing);
 				invokePanoObject(panoObject);
 				return true;
 			}
+
 			// if not:
 			// - get panorama settings from Config.settings.set.panoramas[panoId]
 			// if there are any
@@ -293,7 +296,8 @@
 						if(request && request.response) Object.deepExtend( panoSettings, request.response );
 						if( !pannellum.components.hasOwnProperty( "panoramas" ) ) pannellum.components.panoramas = {};
 						if( pannellum.components.panoramas.hasOwnProperty( panoSettings.type ) ) {
-							panoObject = createPanoObject(panoId, panoSettings);
+							var panoObject = createPanoObject(panoId, panoSettings);
+							setNewPointing(panoObject, newPointing);
 						}else{
 							// - if there are no panorama type class in the system
 							// - - load appropriate type
@@ -301,7 +305,8 @@
 								"components.panoramas",
 								[panoSettings.type]).then(
 								function() {
-									panoObject = createPanoObject(panoId, panoSettings);
+									var panoObject = createPanoObject(panoId, panoSettings);
+									setNewPointing(panoObject, newPointing);
 								},
 								function(msg){
 									throw new pannellum.customErrors.notFoundError(msg);
@@ -321,6 +326,37 @@
 			}
 		}
 
+		function setNewPointing(panoObject, newPointing) {
+			var pano_0 = getPanoramaByIndex(0);
+			if (!pano_0 || !panoObject || !newPointing) return false;
+			if( newPointing.hasOwnProperty('targetPitch')) {
+		    if (newPointing.targetPitch === 'same') {
+		      panoObject.setPitch(pano_0.getPitch());
+		    } else {
+		      panoObject.setPitch(newPointing.targetPitch);
+		    }
+			}
+			if( newPointing.hasOwnProperty('targetYaw')) {
+		    if (newPointing.targetYaw === 'same') {
+		      panoObject.setYaw(pano_0.getYaw());
+		    } else if (newPointing.targetYaw === 'sameAzimuth') {
+		      panoObject.setYaw(
+						config.yaw + (pano_0.getNorthOffset() || 0) - (panoObject.getNorthOffset() || 0)
+					);
+		    } else {
+		       panoObject.setYaw(newPointing.targetYaw);
+		    }
+			}
+
+			if( newPointing.hasOwnProperty('targetHfov')) {
+		    if (newPointing.targetHfov === 'same') {
+		       panoObject.setHfov(pano_0.getHfov());
+		    } else {
+		       panoObject.setHfov(newPointing.targetHfov);
+		    }
+			}
+		}
+
 		/**
 		 * Invoke previously created panorama object
 		 * The function is intended to start functioning initialized earlier panorama. In case we are trying
@@ -333,10 +369,13 @@
 		 */
 		function invokePanoObject(panoObject) {
 			panoObject.container.appendChild(panoObject.canvas);
-			panoObject.container.appendChild(panoObject.hotSpotsCollection.container)
+			panoObject.container.appendChild(panoObject.hotSpotsCollection.container);
 			panoObject.createHotspots();
 			panoObject.hostContainer.appendChild(panoObject.container);
 			pannellum.eventBus.dispatch("pano_initialized", panoObject);
+			panoObject.show();
+			panoObject.resize();
+			panoObject.render();
 		}
 
 		/**
@@ -353,15 +392,20 @@
 				if( !panoSettings.type )  throw new Error("Panorama type is not defoned");
 				if( !pannellum.components.panoramas.hasOwnProperty( panoSettings.type ) ) return null;
 				panoSettings.panoId = panoId;
-				PartsCollection["panoramas"].add(
-					panoId,
-					new pannellum.components.panoramas[ panoSettings.type ](
-						This,
-						RenderContainer,
-						panoSettings
-					)
-				);
-				return PartsCollection["panoramas"].item(panoId);
+				var panoObject = PartsCollection["panoramas"].item(panoId);
+				if(!panoObject) {
+					PartsCollection["panoramas"].add(
+						panoId,
+						new pannellum.components.panoramas[ panoSettings.type ](
+							This,
+							RenderContainer,
+							panoSettings
+						)
+					);
+					panoObject = PartsCollection["panoramas"].item(panoId);
+				}
+				panoObject.show();
+				return panoObject;
 			}catch(e){
 				pannellum.errorMessage.show( "messageBox", e.name, "Invalid settings in \"set.panoramas." + panoSettings.type + "." + panoId + "\" section: " + e.message );
 			}
