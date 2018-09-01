@@ -65,15 +65,15 @@
 			if( config.hasOwnProperty("default") ) this.default = config.default;
 			if( config.default !== null && this.default.length < this.min ) {
 				this.default = this.default + ( Array( this.min - this.default.length + 1 ).join("*") );
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default\'s value number of characters is less then min ("+this.min+") value." );
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default value number of characters is less then min ("+this.min+") value." );
 			}
 			if( config.default !== null && this.default.length > this.max ) {
 				this.default.substring(0, this.max);
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default\'s value number of characters is more then max ("+this.max+") value." );
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default value number of characters is more then max ("+this.max+") value." );
 			}
 			if( config.hasOwnProperty("pattern") ) this.pattern = config.pattern;
 			if( config.default !== null && this.default.length && this.pattern && !this.pattern.test(this.default) ) {
-				if(this.strict)  throw new pannellum.customErrors.dataTypeError( "The default\'s value doesn\'t match the pattern." );
+				if(this.strict)  throw new pannellum.customErrors.dataTypeError( "The default value doesn\'t match the pattern." );
 			}
 		}
 	}
@@ -89,13 +89,15 @@
 			value = this.default;
 		}
 		if( ln > this.max ) {
-			value = value.substring(0, this.max);
-			if(this.strict) throw new pannellum.customErrors.dataTypeError( "The value length is more then max ("+this.max+") number of characters." );
-			value = (this.default !== null) ? this.default : "";
+			value = value.substring(0, this.max) + '...';
+			if(this.strict) {
+				throw new pannellum.customErrors.dataTypeError( "The value length is more then max ("+this.max+") number of characters." );
+				value = (this.default !== '') ? this.default : "";
+			}
 		}
 		if( this.pattern && !this.pattern.test(value) ) {
 			if(this.strict) throw new pannellum.customErrors.dataTypeError( "The value \"" + value + "\" doesn\'t match the pattern." );
-			value = (this.default !== null) ? this.default : "";
+			value = (this.default !== '') ? this.default : "";
 		}
 		//if( !this.noValue && !value ) throw new pannellum.customErrors.dataTypeError( "The value must be set." );
 		return value;
@@ -129,11 +131,11 @@
 			if( config.hasOwnProperty("default") ) this.default = Number( config.default );
 			if( this.default < this.min ) {
 				this.default = this.min;
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default\'s value is less then min ("+this.min+") value." );
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default value is less then min ("+this.min+") value." );
 			}
 			if( this.default > this.max ) {
 				this.default = this.max;
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default\'s value is more then max ("+this.max+") value." );
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default value is more then max ("+this.max+") value." );
 			}
 		}
 	}

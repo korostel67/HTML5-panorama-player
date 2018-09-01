@@ -11,6 +11,7 @@
 		"components.modules.contentBox" :{depends:["components.modules.module"], src: "src/etc/classes.js"},
 		"components.modules.msgBox" :{depends:["components.modules.contentBox"], src: "src/components/modules/msgBox/js/msgBox.js"},
 		"components.modules.panoInfo" :{depends:["components.modules.contentBox"], src: "src/components/modules/panoInfo/js/panoInfo.js"},
+		"components.modules.panoPosition" :{depends:["components.modules.contentBox"], src: "src/components/modules/panoPosition/js/panoPosition.js"},
 
 		"components.controls.control" :{depends:["components.component"], src: "src/etc/classes.js"},
 		"components.controls.fullscreen" :{depends:["components.controls.control"], src: "src/components/controls/fullscreen/js/fullscreen.js"},

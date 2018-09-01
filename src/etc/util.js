@@ -435,8 +435,23 @@ Util.domElement = function(){
 		setAttr : function(el, prop) {
 			setAttr(el, prop);
 		},
-		hide : function(el) { el.style.display = "none"; },
-		show : function(el, type) { el.style.display = (type)?type:"block"; },
+		hide : function(el, type) {
+      switch (type) {
+        case 'visible': el.style.visibility = "hidden";
+          break;
+        default: el.style.display = "none";
+      }
+    },
+		show : function(el, type) {
+      switch (type) {
+        case 'visible': el.style.visibility = "visible";
+          break;
+        case 'block':
+        case 'inline': el.style.display = type;
+          break;
+        default: el.style.display = 'block';
+      }
+    },
 		insert : function(el, target, mode){
 			insert(el, target, mode);
 		}

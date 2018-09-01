@@ -193,9 +193,9 @@
 		var z = hsPitchSin * configPitchSin + hsPitchCos * yawCos * configPitchCos;
 		if ((hs.config.yaw <= 90 && hs.config.yaw > -90 && z <= 0) ||
 		  ((hs.config.yaw > 90 || hs.config.yaw <= -90) && z <= 0)) {
-			pannellum.util.domElement.setAttr(hs.container, {'style': {'visibility' : 'hidden'}});
+			hs.hide();
 		} else {
-			pannellum.util.domElement.setAttr(hs.container, {'style': {'visibility' : 'visible'}});
+			hs.show();
 			// Subpixel rendering doesn't work in Firefox
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=739176
 			var containerWidth = this.container.clientWidth / (window.devicePixelRatio || 1),
@@ -280,7 +280,10 @@
 		this.type = "component";
 		this.host = host;
 		this.hostContainer = hostContainer;
-		this.container = pannellum.util.domElement.create({ name : "div", attributes : {"display":"none","className": "pnlm-component"}}, this.hostContainer);
+		this.container = pannellum.util.domElement.create({ name : "div",
+			attributes : {"className": "pnlm-component"}},
+			this.hostContainer
+		);
 		this.config = {};
 		/** @namespace */
 		this.state = function() {
@@ -394,106 +397,6 @@
 	}
 	pannellum.util.extend(Module, pannellum.components.component);
 	pannellum.components.modules.module = Module;
-
-	if( !pannellum.components.hasOwnProperty("hotSpots") ) pannellum.components.hotSpots={};
-
-	/**
-	 * HotSpot Base Class
-	 * @class
-	 ^ @extends pannellum.components.component
-	 ^ @param {HTMLElement} The host
-	 ^ @param {HTMLElement} The host container
-	 ^ @param {object} Configuration
-	 * @property {string} name
-	 * @property {string} type - Module type (hotSpot). This type will have all the inheritors.
-	 * @property {HTMLElement} host - Viever instance
-	 * @property {HTMLElement} hostContainer - Host HTML Container where hotSpots
-																						container will be placed
-	 * @property {HTMLElement} container - HTML Container for hotSpots HTMLElements
-	 * @property {object} config - HotSpot configuration
-	 */
-	var HotSpot = function(host, hostContainer, config){
-		HotSpot.superclass.constructor.apply(this, arguments);
-		this.name = "HotSpot";
-		this.type = "hotSpot";
-		var dataTypes = {
-			yaw : pannellum.dataTypes.dtNumber({ min: -360, max: 360, default: 0 }),
-			pitch : pannellum.dataTypes.dtNumber({ min: -85, max: 85, default: 0 }),
-			info : pannellum.dataTypes.dtString({ min: 0, max: 30, strict: false }),
-			sceneId : pannellum.dataTypes.dtString({ min: 2, max: 30, strict: false }),
-			targetYaw :  pannellum.dataTypes.dtString({ min: 1, max: 30, pattern: /^-?[0-9]*|same|sameAzimuth$/, default: "0" }),
-			targetPitch :  pannellum.dataTypes.dtString({ min: 1, max: 30, pattern: /^-?[0-9]|same$/, default: "0" }),
-		}
-		this.checkConfig(config, dataTypes);
-		pannellum.util.domElement.setAttr(this.container, { 'className' : ((this.container.className) ? this.container.className + ' ' : '') + 'pnlm-hotspot pnlm-tooltip pnlm-sprite' });
-		var span = pannellum.util.domElement.create({ name : 'span' });
-		if (this.config.info) pannellum.util.domElement.setContent( span, pannellum.util.escapeHTML(this.config.info) );
-		this.container.appendChild(span);
-		pannellum.util.domElement.setAttr(span, {'style': {
-			'width' : span.scrollWidth - 20 + 'px',
-			'marginLeft' : -(span.scrollWidth - 26) / 2 + 'px',
-			'marginTop' : -span.scrollHeight - 12 + 'px'
-		}});
-
-		/*
-		pannellum.eventBus.addEventListener("host_locked", function(event) {
-			This.hotspotState.lock();
-		}, This);
-		pannellum.eventBus.addEventListener("host_locked", function(event) {
-			This.hotspotState.unlock();
-		}, This);
-		pannellum.eventBus.addEventListener("panorama_to_load", function(event) {
-			if( event.dispatcher = This ) This.hotspotState.lock();
-		}, This);
-		*/
-	}
-
-	pannellum.util.extend(HotSpot, pannellum.components.component);
-
-	/**
-	* Creates hotSpot HTMLElement
-	^ @memberof HotSpot
-	* @param {HTMLElement} HTML Container for hotSpots HTMLElements
-	*/
-	HotSpot.prototype.create = function(container) {
-		this.container = pannellum.util.domElement.create({
-			name : 'div',
-			attributes : {'className': 'pnlm-hotspot pnlm-tooltip pnlm-sprite pnlm-' + pannellum.util.escapeHTML(this.config.type) }
-		}, container);
-		var span = pannellum.util.domElement.create({ name : 'span' });
-		if (this.config.info) pannellum.util.domElement.setContent( span, pannellum.util.escapeHTML(this.config.info) );
-		this.container.appendChild(span);
-		pannellum.util.domElement.setAttr(span, {'style': {
-			'width' : span.scrollWidth - 20 + 'px',
-			'marginLeft' : -(span.scrollWidth - 26) / 2 + 'px',
-			'marginTop' : -span.scrollHeight - 12 + 'px'
-		}});
-		return this.container;
-	}
-
-	/**
-	* Destroys hotSpot HTMLElement
-	^ @memberof HotSpot
-	*/
-	HotSpot.prototype.destroy = function() {
-		this.container.removeChild( this.container );
-		this.container = undefined;
-	}
-
-	/**
-	* Transforms hotSpot HTMLElement
-	^ @memberof HotSpot
-	* @param {object} HotSpot new position
-	*/
-	HotSpot.prototype.translate = function(position) {
-		var transform = 'translate(' + position.x + 'px, ' + position.y + 'px) translateZ(9999px)';
-		pannellum.util.domElement.setAttr(this.container, {'style': {'webkitTransform' : transform}});
-		pannellum.util.domElement.setAttr(this.container, {'style': {'MozTransform' : transform}});
-		pannellum.util.domElement.setAttr(this.container, {'style': {'transform' : transform}});
-	}
-
-	/**@namespace*/
-	pannellum.components.hotSpots.hotSpot = HotSpot;
 
 /////////////Module Content Box/////////////////
 
