@@ -23,8 +23,11 @@
 			this.name = "HotSpot";
 			this.type = "hotSpot";
 			this.tooltip;
+<<<<<<< HEAD
 			this.info;
 			this.image;
+=======
+>>>>>>> 0d6e121f0c884cdddd39913f8dca5325ce4d154d
 			var dataTypes = {
 				yaw : pannellum.dataTypes.dtNumber({ min: -360, max: 360, default: 0 }),
 				pitch : pannellum.dataTypes.dtNumber({ min: -85, max: 85, default: 0 }),
@@ -32,6 +35,7 @@
 				sceneId : pannellum.dataTypes.dtString({ min: 2, max: 30, strict: false }),
 				targetYaw :  pannellum.dataTypes.dtString({ min: 1, max: 30, pattern: /^-?[0-9]*|same|sameAzimuth$/, default: "0" }),
 				targetPitch :  pannellum.dataTypes.dtString({ min: 1, max: 30, pattern: /^-?[0-9]|same$/, default: "0" }),
+<<<<<<< HEAD
 				URL : pannellum.dataTypes.dtUrl({ min: 10, /*max: 30,*/ strict: false }),
 				image : pannellum.dataTypes.dtString({ min: 10, /*max: 30,*/ strict: false, default:null })
 			}
@@ -41,6 +45,41 @@
 				pannellum.util.domElement.setAttr(this.container, { 'className' : ((this.container.className) ? this.container.className + ' ' : '') + 'pnlm-hotspot pnlm-sprite pnlm-' + this.name });
 				this.show();
 			}, this);
+=======
+			}
+			this.checkConfig(config, dataTypes);
+			var This = this;
+			pannellum.util.domElement.create({ name : 'link', attributes : {
+				href: 'src/components/hotSpots/css/styles.css',
+				onload : function(){
+					pannellum.util.domElement.setAttr(This.container, { 'className' : ((This.container.className) ? This.container.className + ' ' : '') + 'pnlm-hotspot pnlm-sprite' });
+
+					This.show();
+
+					// Tooltip defining after the containner is valid to calculate width and height
+					if (This.config.info) {
+						pannellum.util.domElement.setAttr(This.container, { 'className' : This.container.className + ' tooltiped' });
+						This.tooltip = pannellum.util.domElement.create({ name : 'span' });
+						pannellum.util.domElement.setContent( This.tooltip, pannellum.util.escapeHTML(This.config.info) );
+						This.container.appendChild(This.tooltip);
+						pannellum.util.domElement.setAttr(This.tooltip, {
+							'className' : 'pnlm-tooltip'
+						});
+
+						// Width correction for info more then n characters
+						var wc = (This.config.info.length > 10) ? 70:0;
+						pannellum.util.domElement.setAttr(This.tooltip, {'style': {
+							'width' : This.tooltip.scrollWidth + wc  + 'px'
+						}});
+						pannellum.util.domElement.setAttr(This.tooltip, {'style': {
+							'marginLeft' : -(This.tooltip.scrollWidth - This.container.offsetWidth+13) / 2 + 'px',
+							'marginTop' : -(This.tooltip.scrollHeight + 12) + 'px',
+						}});
+					}
+				}
+			} }, document.head);
+
+>>>>>>> 0d6e121f0c884cdddd39913f8dca5325ce4d154d
 			/*
 			pannellum.eventBus.addEventListener("host_locked", function(event) {
 				This.hotspotState.lock();
@@ -57,6 +96,7 @@
 		pannellum.util.extend(HotSpot, pannellum.components.component);
 
 		/**
+<<<<<<< HEAD
 		* Resize Tooltip
 		* @memberof HotSpot
 		*/
@@ -119,6 +159,8 @@
 		}
 
 		/**
+=======
+>>>>>>> 0d6e121f0c884cdddd39913f8dca5325ce4d154d
 		* Show HotSpot
 		^ @memberof HotSpot
 		*/
