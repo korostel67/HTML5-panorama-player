@@ -29,6 +29,7 @@ var settings = {
 	"modules" : [
 		"panoPosition"
 	],
+	"transition" : ["simpleOpacity",{"duration":1000}],
 	"set": {
 		//"require": {"id": "set-1"},
 		"firstPanorama" : "rostov_1",
@@ -38,6 +39,7 @@ var settings = {
 			//},
 			"rostov_1": {
 				"require": {"id": "rostov_1/rostov_1"},
+				//"transition" : ["simpleOpacity",{"duration":1000}],
 				"useGPanoXMP":false,
 				"title":"rostov_1",
 				"info": "By Korostel",
@@ -49,7 +51,6 @@ var settings = {
 				"yaw": 80,
 				"type": "equirectangular",
 				"panorama": "data/panoramas/rostov_1/rostov_1.jpg",
-				"transition":"cssFade",
 				"hotSpots": [
 					["panorama", {
 						"pitch": -1.8,
@@ -89,6 +90,7 @@ var settings = {
 			},
 			"rostov_2": {
 				//"require": {"id": "rostov_5/rostov_5"},
+				//"transition" : ["simpleOpacity",{"duration":1000}],
 				"useGPanoXMP":false,
 				"title":"rostov_2",
 				"info": "By Korostel",
@@ -100,7 +102,6 @@ var settings = {
 				"yaw": 0,
 				"type": "equirectangular",
 				"panorama": "data/panoramas/rostov_2/rostov_2.jpg",
-				"transition":"cssFade",
 				"hotSpots": [
 					["panorama", {
 						"pitch": 2.3,
@@ -133,7 +134,6 @@ var settings = {
 				"yaw": 0,
 				"type": "equirectangular",
 				"panorama": "data/panoramas/rostov_3/rostov_3.jpg",
-				"transition":"cssFade",
 				"hotSpots": [
 					["panorama", {
 						"pitch": 3,
@@ -174,7 +174,6 @@ var settings = {
 				"yaw": 0,
 				"type": "equirectangular",
 				"panorama": "data/panoramas/rostov_4/rostov_4.jpg",
-				"transition":"cssFade",
 				"hotSpots": [
 					["panorama", {
 						"pitch": -6,
@@ -215,7 +214,6 @@ var settings = {
 				"yaw": 0,
 				"type": "equirectangular",
 				"panorama": "data/panoramas/rostov_5/rostov_5.jpg",
-				"transition":"cssFade",
 				"hotSpots": [
 					["panorama", {
 						"pitch": 0,
@@ -246,7 +244,6 @@ var settings = {
 				"yaw": 0,
 				"type": "equirectangular",
 				"panorama": "data/panoramas/rostov_6/rostov_6.jpg",
-				"transition":"cssFade",
 				"hotSpots": [
 					["panorama", {
 						"pitch": 0,

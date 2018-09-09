@@ -346,7 +346,7 @@
 //## # prepareWebGL }
 
 		this.resize();
-		pannellum.eventBus.dispatch("pano_initialized", this);
+		pannellum.eventBus.dispatch("panorama:initialized", this);
 	};
 
 	Equirectangular.prototype.resize = function() {

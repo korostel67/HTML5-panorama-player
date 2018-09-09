@@ -29,7 +29,7 @@
 				], box);
 				This.update( {title:"Positions", pitchT:"Pitch", pitch:"0", yawT:"Yaw", yaw:"0"} );
 
-				pannellum.eventBus.addEventListener("pano_initialized", function(event) {
+				pannellum.eventBus.addEventListener("panorama:initialized", function(event) {
 					var title = event.dispatcher.getTitle();
 					This.update({title:title, pitchT:"Pitch", pitch:"0", yawT:"Yaw", yaw:"0"} );
 				});

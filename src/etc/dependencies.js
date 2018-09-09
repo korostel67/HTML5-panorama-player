@@ -24,7 +24,9 @@
 		"components.hotSpots.link" : { depends : ["components.hotSpots.hotSpot"], src : "src/components/hotSpots/js/hotSpots.js" },
 		"components.hotSpots.image" : { depends : ["components.hotSpots.hotSpot"], src : "src/components/hotSpots/js/hotSpots.js" },
 		"components.hotSpots.video" : { depends : ["components.hotSpots.hotSpot"], src : "src/components/hotSpots/js/hotSpots.js" },
-		"components.hotSpots.info" : { depends : ["components.hotSpots.hotSpot"], src : "src/components/hotSpots/js/hotSpots.js" }
+		"components.hotSpots.info" : { depends : ["components.hotSpots.hotSpot"], src : "src/components/hotSpots/js/hotSpots.js" },
+
+		"actions.transitions.simpleOpacity" : { depends : ["actions.action"], src : "src/actions/transitions/simpleOpacity/js/script.js" },
 
 	}
 	if( !pannellum.hasOwnProperty("dependencies") ) pannellum.dependencies = dependencies;

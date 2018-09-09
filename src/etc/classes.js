@@ -262,6 +262,32 @@
 	pannellum.collections.hotSpotsCollection = HotSpotsCollection;
 
 	/**@namespace*/
+	if( !pannellum.hasOwnProperty("actions") ) pannellum.actions={};
+
+	/**
+	 * Action Base Class
+	 * @class
+	 ^ @param {object} Configuration
+	 * @property {string} name
+	 * @property {string} type - Action type
+	 * @property {object} config - Component configuration
+	 */
+	var Action = function(config){
+		this.name = "Action";
+		this.type = "action";
+		this.config = {};
+	}
+
+	/**
+	* Runs action base method
+	^ @memberof Action
+	*/
+	Action.prototype.run = function(){}
+
+	/**@namespace*/
+	pannellum.actions.action = Action;
+
+	/**@namespace*/
 	if( !pannellum.hasOwnProperty("components") ) pannellum.components={};
 
 	/**
@@ -507,6 +533,15 @@
 		  }
 		}
 		pannellum.util.extend(CustomError, Error);
+
+		// Undefined data errors
+		function UndefinedDataError(message) {
+		  UndefinedDataError.superclass.constructor.call(this, message);
+		  this.name = "UndefinedDataError";
+		  this.message = "UndefinedDataError Error. " + message;
+		}
+		pannellum.util.extend(UndefinedDataError, CustomError);
+		pannellum.customErrors.undefinedDataError = UndefinedDataError;
 
 		// File not found - 404
 		function NotFoundError(message) {

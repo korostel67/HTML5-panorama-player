@@ -7,7 +7,6 @@ if( !pannellum.components.hasOwnProperty("panoramas") ) pannellum.components.pan
 
 ////// Panorama prototype ///////
 var Panorama = function(host, hostContainer, config){
-
 	Panorama.superclass.constructor.apply(this, arguments);
 	this.name = 'Panorama';
 	this.type = 'panorama';
@@ -32,7 +31,9 @@ var Panorama = function(host, hostContainer, config){
 		vOffset : pannellum.dataTypes.dtNumber({ min: 0, max: 180, default: 0 }),
 		northOffset: pannellum.dataTypes.dtNumber({ min: -360, max: 360, default: 0 }),
 		hotSpots: pannellum.dataTypes.dtHotSpots({strict:true}),
+		transition: pannellum.dataTypes.dtTransitions({strict:false})
 	}
+
 	this.checkConfig(config, dataTypes);
 	this.panoId = this.config.panoId;
 	this.panoImage = undefined;
@@ -56,6 +57,16 @@ var Panorama = function(host, hostContainer, config){
 			'style': {width:'100%', height:'100%'}
 		}
 	}, this.container);
+
+	var This = this;
+	if (!this.transition && this.config.transition) {
+		pannellum.partsLoader.addParts(
+			"actions.transitions." + this.config.transition.name,
+			{}
+		).then(function(result) {
+			This.transition = new pannellum.actions.transitions[This.config.transition.name](This.config.transition.settings);
+		});
+	}
 
 	/**
 	* Check if images are loading.
@@ -133,7 +144,7 @@ Panorama.prototype.resize = function() {
 };
 
 Panorama.prototype.createHotspots = function() {
-	if( !this.config.hasOwnProperty('hotSpots') ) return null;
+	if( !this.config.hasOwnProperty('hotSpots') || !this.config.hotSpots ) return null;
 	var This = this;
 	//Prepare HotspotsComponents
 	// Then Create HotSpots
