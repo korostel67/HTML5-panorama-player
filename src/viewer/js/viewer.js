@@ -25,10 +25,17 @@
 					viewer : {},
 					controls : [],
 					modules : [],
+					transition : [],
 					set : { panoramas : {} }
 				},
 			},
-			Container, RenderContainer, ControlsContainer, ModulesContainer, DragFix, PartsCollection = {}, InteractionsCollection = {}, ViewerDataTypes, QueryVars, KeysDown=[],
+			Container, RenderContainer, ControlsContainer, ModulesContainer, DragFix,
+
+			// Collections of instances to reuse during viewer work
+			PartsCollection = {},
+			InteractionsCollection = {},
+
+			ViewerDataTypes, QueryVars, KeysDown=[],
 			OnPointerDown = {
 				PointerX:0,
 				PointerY:0,
@@ -84,7 +91,7 @@
 		}();
 		this.viewerState = ViewerState;
 
-		pannellum.eventBus.addEventListener("components_ready",
+		pannellum.eventBus.addEventListener("viever:parts_ready",
 			function(event, prop) {
 				var state = { modules:false, controls:false }
 				return function(event, prop){
@@ -101,27 +108,46 @@
 			loadPanorama( Config.settings.set.firstPanorama );
 		}, this);
 
-		pannellum.eventBus.addEventListener("pano_initialized", function(event) {
-			if( typeof event.dispatcher != 'undefined' ) {
-				var panoObjest = PartsCollection["panoramas"].item(event.dispatcher.panoId);
-				/*
-				// Start Transitions
-				var pano_0 = getPanoramaByIndex('last');
-				if( pano_0 && config.current.transition &&
-					config.transitions.hasOwnProperty(config.current.transition) &&
-					//pannellum.transitions.hasOwnProperty(pano_0.config.transition) &&
-					pano_0.panoId != event.dispatcher.panoId ) {
-					// Start the transition
-					pannellum.eventBus.dispatch('transition_' + config.current.transition, this, config.transitions[config.current.transition] );
-					return false;
-				}
-				// We have no transitions defined
-				if( pano_0 !== null && pano_0.panoId !== event.dispatcher.panoId ) { pano_0.destroy(); pano_0 = undefined; }
-				// End Transitions
-				*/
-		 		ViewerState.unlock();
-		 		panoObjest.render();
+		pannellum.eventBus.addEventListener("panorama:initialized", function(event) {
+			if( typeof event.dispatcher === 'undefined' ) {
+				throw new pannellum.customErrors.undefinedDataError('Undefined panorama:initialized event dispatcher');
 			}
+
+			var panoObjest = PartsCollection["panoramas"].item(event.dispatcher.panoId);
+			var pano_0 = getPanoramaByIndex(0);
+			if( pano_0 && pano_0.panoId != panoObjest.panoId ) {
+				if (pano_0.transition) {
+					panoObjest.render();
+					// Start the transition
+					pano_0.transition.run(panoObjest.container, pano_0.container);
+				} else {
+					panoObjest.render();
+					pano_0.destroy();
+					pano_0 = undefined;
+			 		ViewerState.unlock();
+				}
+			} else {
+		 		panoObjest.render();
+				ViewerState.unlock();
+			}
+		}, this);
+
+		pannellum.eventBus.addEventListener("transition:done", function(event) {
+			if( typeof event.dispatcher === 'undefined' ) {
+				throw new pannellum.customErrors.undefinedDataError('Undefined transition:done event dispatcher');
+			}
+			var panoObjest = getPanoramaByIndex(1);
+			var pano_0 = getPanoramaByIndex(0);
+			if( pano_0 !== null &&  panoObjest != null && pano_0.panoId !== panoObjest.panoId ) {
+	 			panoObjest.render();
+				pano_0.destroy();
+				pano_0 = undefined;
+			}
+	 		ViewerState.unlock();
+		}, this);
+
+		pannellum.eventBus.addEventListener("panorama_to_load", function(event, prop) {
+		  loadPanorama( prop.panoId, prop );
 		}, this);
 
 		// Load required files
@@ -244,18 +270,18 @@
 					}
 				}
 				if( !Config.settings.set.firstPanorama ) throw new Error("No panorama to show defined");
-
 				//Set Container first to be able to see mergeConfig error messages
 				setContainers();
 				//Set modules collection as we add there an ErrorMessage module first
 				PartsCollection["modules"] = new pannellum.collections.objectCollection();
 				PartsCollection["panoramas"] = new pannellum.collections.objectCollection();
+				// actions are used in transition only.
+				PartsCollection["actions"] = new pannellum.collections.objectCollection();
 				InteractionsCollection = new pannellum.collections.objectCollection();
 
 				//Load components
-				if(typeof Config.settings["modules"] != "undefined" && Config.settings["modules"].length )
 				prepareComponents( { "type": "modules", "compSet" : Config.settings["modules"], "container": ModulesContainer } );
-				if(typeof Config.settings["controls"] != "undefined" && Config.settings["controls"].length ) prepareComponents( { "type": "controls", "compSet" : Config.settings["controls"], "container": ControlsContainer } );
+				prepareComponents( { "type": "controls", "compSet" : Config.settings["controls"], "container": ControlsContainer } );
 
 			}catch(e){
 				if( e instanceof pannellum.customErrors.compatiblityError )  {
@@ -271,13 +297,18 @@
 		 * @private
 		 * @param {string} Panorama ID to be loaded.
 		 */
-		function loadPanorama(panoId) {
+		function loadPanorama(panoId, newPointing) {
 			ViewerState.lock();
 			//Options:
 			// - check if panorama has already been initialized (can be found in the panoramas collection)
+
 			var panoObject = PartsCollection["panoramas"].item(panoId);
 			// if yes
-			if( panoObject ) { startPanorama(panoObject); return true; }
+			if( panoObject ) {
+				setNewPointing(panoObject, newPointing);
+				invokePanoObject(panoObject);
+				return true;
+			}
 
 			// if not:
 			// - get panorama settings from Config.settings.set.panoramas[panoId]
@@ -285,6 +316,9 @@
 			var panoSettings;
 			if( Config.settings.set.panoramas[panoId] ) {
 				panoSettings = Config.settings.set.panoramas[panoId];
+				if (!panoSettings.hasOwnProperty('transition') || !panoSettings.transition) {
+					panoSettings.transition = Config.settings.transition;
+				}
 			}else{
 			// If not (the panorama is not in the set)
 			// panoId actualy is a folder path like "folder" or "folder/folder/folder"
@@ -305,8 +339,8 @@
 						}
 						if( !pannellum.components.hasOwnProperty( "panoramas" ) ) pannellum.components.panoramas = {};
 						if( pannellum.components.panoramas.hasOwnProperty( panoSettings.type ) ) {
-							panoObject = getNewPanoramaInstance(panoId, panoSettings);
-							startPanorama(panoObject);
+							var panoObject = createPanoObject(panoId, panoSettings);
+							setNewPointing(panoObject, newPointing);
 						}else{
 							// - if there are no panorama type class in the system
 							// - - load appropriate type
@@ -314,8 +348,8 @@
 								"components.panoramas",
 								[panoSettings.type]).then(
 								function() {
-									panoObject = getNewPanoramaInstance(panoId, panoSettings);
-									startPanorama(panoObject);
+									var panoObject = createPanoObject(panoId, panoSettings);
+									setNewPointing(panoObject, newPointing);
 								},
 								function(msg){
 									throw new pannellum.customErrors.notFoundError(msg);
@@ -328,7 +362,63 @@
 			//Require settings if any "require" directives are set
 			// - if there is a require directive
 			// - - load settings and update Config.settings.set.panoramas[panoId] settings
-			requireSettings(sourcesList);
+			if(panoSettings.hasOwnProperty('require')) {
+				requireSettings(sourcesList);
+			}else{
+				sourcesList[0].callback(null);
+			}
+		}
+
+		function setNewPointing(panoObject, newPointing) {
+			var pano_0 = getPanoramaByIndex(0);
+			if (!pano_0 || !panoObject || !newPointing) return false;
+			if( newPointing.hasOwnProperty('targetPitch')) {
+		    if (newPointing.targetPitch === 'same') {
+		      panoObject.setPitch(pano_0.getPitch());
+		    } else {
+		      panoObject.setPitch(newPointing.targetPitch);
+		    }
+			}
+			if( newPointing.hasOwnProperty('targetYaw')) {
+		    if (newPointing.targetYaw === 'same') {
+		      panoObject.setYaw(pano_0.getYaw());
+		    } else if (newPointing.targetYaw === 'sameAzimuth') {
+		      panoObject.setYaw(
+						config.yaw + (pano_0.getNorthOffset() || 0) - (panoObject.getNorthOffset() || 0)
+					);
+		    } else {
+		       panoObject.setYaw(newPointing.targetYaw);
+		    }
+			}
+
+			if( newPointing.hasOwnProperty('targetHfov')) {
+		    if (newPointing.targetHfov === 'same') {
+		       panoObject.setHfov(pano_0.getHfov());
+		    } else {
+		       panoObject.setHfov(newPointing.targetHfov);
+		    }
+			}
+		}
+
+		/**
+		 * Invoke previously created panorama object
+		 * The function is intended to start functioning initialized earlier panorama. In case we are trying
+		 * to show previously played panorama, it's oject could be taken from PartsCollection["panoramas"].
+		 * Constructing and starting panoramas should be differed. We need to have possobility to start constructed earlier panorama.
+		 * @TODO Set new pointing using previous panorama settings
+		 *
+		 * @private
+		 * @param {Object} Panorama object
+		 */
+		function invokePanoObject(panoObject) {
+			panoObject.container.appendChild(panoObject.canvas);
+			panoObject.container.appendChild(panoObject.hotSpotsCollection.container);
+			panoObject.createHotspots();
+			panoObject.hostContainer.appendChild(panoObject.container);
+			pannellum.eventBus.dispatch("panorama:initialized", panoObject);
+			panoObject.show();
+			panoObject.resize();
+			panoObject.render();
 		}
 
 		/**
@@ -338,42 +428,31 @@
 		 * @param {String} Panorama settings.
 		 * @returns {Object} Panorama object
 		 */
-		function getNewPanoramaInstance(panoId, panoSettings) {
+		function createPanoObject(panoId, panoSettings) {
 			try{
 				if( !panoId )  throw new Error("Panorama id is not defoned");
 				if( !panoSettings )  throw new Error("Panorama settings are not defoned");
 				if( !panoSettings.type )  throw new Error("Panorama type is not defoned");
 				if( !pannellum.components.panoramas.hasOwnProperty( panoSettings.type ) ) return null;
 				panoSettings.panoId = panoId;
-				PartsCollection["panoramas"].add(
-					panoId,
-					new pannellum.components.panoramas[ panoSettings.type ](
-						This,
-						RenderContainer,
-						panoSettings
-					)
-				);
-				var panoObjest = PartsCollection["panoramas"].item(panoId);
-				return panoObjest;
+				var panoObject = PartsCollection["panoramas"].item(panoId);
+				if(!panoObject) {
+					PartsCollection["panoramas"].add(
+						panoId,
+						new pannellum.components.panoramas[ panoSettings.type ](
+							This,
+							RenderContainer,
+							panoSettings
+						)
+					);
+					panoObject = PartsCollection["panoramas"].item(panoId);
+				}
+				panoObject.show();
+				return panoObject;
 			}catch(e){
 				pannellum.errorMessage.show( "messageBox", e.name, "Invalid settings in \"set.panoramas." + panoSettings.type + "." + panoId + "\" section: " + e.message );
+				console.log(e);
 			}
-		}
-
-		/**
-		 * Starts panorama.
-		 * The function is intended to start functioning initialized earlier panorama. In case we are trying
-		 * to show previously played panorama, it's oject could be taken from PartsCollection["panoramas"].
-		 * Constructing and starting panoramas should be differed. We need to have possobility to start constructed earlier panorama.
-		 * TODO: This function doesn't work now. Make it wor as intended.
-		 * @private
-		 * @param {object} Panorama object to be started.
-		 */
-		function startPanorama(panoObject) {
-			// Set new pointing using previous panorama settings
-			// panoObject.load();
-			//console.log(panoObject);
-			console.log("doneIt");
 		}
 
 		/**
@@ -416,12 +495,15 @@
 		}
 
 		/**
-		 * Prepares (loads) componebts
+		 * Prepares (loads) componebts and puts them into appropriate collection
 		 * @private
 		 * @param {object} load settings
 		 */
 		function prepareComponents(addComponents) {
-			if( addComponents ) pannellum.partsLoader.addParts(
+			if( !addComponents || addComponents.length == 0 ) {
+				pannellum.eventBus.dispatch('viever:parts_ready', this, addComponents.type );
+			}
+			pannellum.partsLoader.addParts(
 				"components." + addComponents.type,
 				addComponents.compSet).then(
 				function() {
@@ -450,7 +532,7 @@
 							}
 						}
 					}
-					pannellum.eventBus.dispatch('components_ready', This, addComponents.type );
+					pannellum.eventBus.dispatch('viever:parts_ready', This, addComponents.type );
 				},
 				function(msg){
 					console.log(msg);
@@ -1099,10 +1181,11 @@
 							filesToLoadLength = filesToLoad.length;
 							pannellum.util.loadScript( filesToLoad, document.head );
 						}else{
-							//nothing to load
+							console.log('array filesToLoad is empty, nothing to load');
 							resolve(false);
 						}
 					}else{
+						console.log('array FilesStack is empty, nothing to load');
 						resolve(false);
 					}
 					setTimeout( function(){

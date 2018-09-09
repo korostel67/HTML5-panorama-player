@@ -1,0 +1,43 @@
+
+.pnlm-tooltip {
+  cursor:pointer;
+}
+.pnlm-tooltip .pnlm-tooltip-info{
+  display:block;
+}
+.pnlm-tooltip .pnlm-tooltip-image{
+  display:block;
+  text-align:center;
+}
+.pnlm-tooltip .pnlm-tooltip-image img{
+  min-width:120px;
+  max-width:100%;
+}
+
+.pnlm-PanoramaHotSpot {
+  background-position:0 -26px;
+    cursor:pointer;
+}
+.pnlm-PanoramaHotSpot .pnlm-tooltip {
+  cursor:pointer;
+}
+.pnlm-LinkHotSpot {
+  background-position:0 0;
+  cursor:pointer;
+}
+.pnlm-LinkHotSpot .pnlm-tooltip {
+  cursor:pointer;
+}
+.pnlm-ImageHotSpot {
+  background-position:0 0;
+}
+.pnlm-VideoHotSpot {
+  background-position:0 0;
+}
+.pnlm-VideoHotSpot .pnlm-tooltip {
+  max-width:initial;
+}
+.pnlm-InfoHotSpot {
+  background-position:0 0;
+  cursor:help;
+}

@@ -7,7 +7,6 @@ if( !pannellum.components.hasOwnProperty("panoramas") ) pannellum.components.pan
 
 ////// Panorama prototype ///////
 var Panorama = function(host, hostContainer, config){
-
 	Panorama.superclass.constructor.apply(this, arguments);
 	this.name = 'Panorama';
 	this.type = 'panorama';
@@ -32,7 +31,9 @@ var Panorama = function(host, hostContainer, config){
 		vOffset : pannellum.dataTypes.dtNumber({ min: 0, max: 180, default: 0 }),
 		northOffset: pannellum.dataTypes.dtNumber({ min: -360, max: 360, default: 0 }),
 		hotSpots: pannellum.dataTypes.dtHotSpots({strict:true}),
+		transition: pannellum.dataTypes.dtTransitions({strict:false})
 	}
+
 	this.checkConfig(config, dataTypes);
 	this.panoId = this.config.panoId;
 	this.panoImage = undefined;
@@ -56,6 +57,16 @@ var Panorama = function(host, hostContainer, config){
 			'style': {width:'100%', height:'100%'}
 		}
 	}, this.container);
+
+	var This = this;
+	if (!this.transition && this.config.transition) {
+		pannellum.partsLoader.addParts(
+			"actions.transitions." + this.config.transition.name,
+			{}
+		).then(function(result) {
+			This.transition = new pannellum.actions.transitions[This.config.transition.name](This.config.transition.settings);
+		});
+	}
 
 	/**
 	* Check if images are loading.
@@ -103,8 +114,8 @@ pannellum.components.panoramas.panorama = Panorama;
 //## WebGL, CSS3
 //## CM, MR, EQ, VD
 Panorama.prototype.destroy = function() {
-	if (this.hostContainer !== undefined) return false;
-	if (this.container !== undefined) return false;
+	if (this.hostContainer === undefined) return false;
+	if (this.container === undefined) return false;
 	if (this.canvas !== undefined) this.container.removeChild(this.canvas);
 	if (this.world !== undefined) this.container.removeChild(this.world);
 	this.hotSpotsCollection.destroy();
@@ -133,7 +144,7 @@ Panorama.prototype.resize = function() {
 };
 
 Panorama.prototype.createHotspots = function() {
-	if( !this.config.hasOwnProperty('hotSpots') ) return null;
+	if( !this.config.hasOwnProperty('hotSpots') || !this.config.hotSpots ) return null;
 	var This = this;
 	//Prepare HotspotsComponents
 	// Then Create HotSpots
@@ -143,7 +154,6 @@ Panorama.prototype.createHotspots = function() {
 		"components.hotSpots",
 		this.config.hotSpots
 	).then(function(result) {
-console.log('loading hotspots');
 		if( !This.hotSpotsCollection ) This.hotSpotsCollection = new pannellum.collections.hotSpotsCollection(This, This.container);
 		if( !pannellum.components.hasOwnProperty( 'hotSpots' ) ) pannellum.components['hotSpots'] = {}
 		var hsLength = This.config.hotSpots.length;
@@ -155,11 +165,15 @@ console.log('loading hotspots');
 				if( !This.hotSpotsCollection.item( hsSettings.name ) && pannellum.components['hotSpots'].hasOwnProperty( hsSettings.name ) ) {
 					try{
 						This.hotSpotsCollection.add( hsSettings );
+						This.hotSpotsCollection.item( hsSettings );
 					}catch(e){
 						pannellum.errorMessage.show( "messageBox", e.name, "Invalid settings in \"set.panoramas." + This.panoId + ".hotSpots[" + i + "]\". " + e.message );
 					}
 				}
 			}
+		}
+		pannellum.eventBus.dispatch("HotSpotsCollection:ready", this);
+		if( hsLength > 0 ) {
 			This.translateHotspots();
 		}
 	//	This.resize();
@@ -192,11 +206,13 @@ Panorama.prototype.render = function() {
 	// Ensure the calculated pitch is within min and max allowed
 	this.config.pitch = Math.max(this.config.minPitch, Math.min(this.config.maxPitch, this.config.pitch));
 	this.translateHotspots();
+	pannellum.eventBus.dispatch("panorama:render", this);
 }
 
 /**
  * Sets viewer's horizontal field of view.
- * @private
+ * @public
+ * @memberof panorama
  * @param {number} hfov - Desired horizontal field of view in degrees.
  */
 Panorama.prototype.setHfov = function (hfov) {
@@ -219,6 +235,22 @@ Panorama.prototype.setHfov = function (hfov) {
 		}
 }
 
+/**
+ * Gets viewer's horizontal field of view.
+ * @public
+ * @memberof panorama
+ * @returns {number}
+ */
+Panorama.prototype.getHfov = function () {
+		return this.config.hfov;
+}
+
+/**
+ * Sets panorama's yaw.
+ * @public
+ * @memberof panorama
+ * @param {number} yaw
+ */
 Panorama.prototype.setYaw = function (yaw) {
 	if( typeof yaw == 'undefined' ) return false;
 	if (yaw > 180) {
@@ -230,9 +262,66 @@ Panorama.prototype.setYaw = function (yaw) {
 	this.config.yaw = Math.max(this.config.minYaw, Math.min(this.config.maxYaw, yaw));
 }
 
+/**
+ * Gets panorama's title.
+ * @public
+ * @memberof panorama
+ * @returns {string}
+ */
+Panorama.prototype.getTitle = function () {
+	return this.config.title;
+}
+
+/**
+ * Gets viewer's yaw.
+ * @public
+ * @memberof panorama
+ * @returns {number}
+ */
+Panorama.prototype.getYaw = function () {
+	return this.config.yaw;
+}
+
+/**
+ * Sets panorama's pitch.
+ * @public
+ * @memberof panorama
+ * @param {number} pitch
+ */
 Panorama.prototype.setPitch = function (pitch) {
 	if( typeof pitch == 'undefined' ) return false;
 	this.config.pitch = Math.max(this.config.minPitch, Math.min(this.config.maxPitch, pitch));
+}
+
+/**
+ * Gets panorama's pitch.
+ * @public
+ * @memberof panorama
+ * @returns {number}
+ */
+Panorama.prototype.getPitch = function () {
+	return this.config.pitch;
+}
+
+/**
+ * Sets panorama's north offset.
+ * @public
+ * @memberof panorama
+ * @param {number} pitch
+ */
+Panorama.prototype.setNorthOffset = function (northOffset) {
+	if( typeof northOffset == 'undefined' ) return false;
+	this.config.northOffset = northOffset;
+}
+
+/**
+ * Gets panorama's north offset.
+ * @public
+ * @memberof panorama
+ * @returns {number}
+ */
+Panorama.prototype.getNorthOffset = function () {
+	return this.config.northOffset;
 }
 
 }(window.pannellum || (window.pannellum={}), document));

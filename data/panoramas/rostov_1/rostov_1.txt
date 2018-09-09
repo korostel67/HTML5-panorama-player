@@ -1,6 +1,6 @@
 {
 	"useGPanoXMP":false,
-	"title":"rostov_5",
+	"title":"rostov_1",
 	"info": "By Korostel",
 	"hfov": 100,
 	"minHfov": 70,
@@ -9,6 +9,6 @@
 	//"maxPitch":10,
 	"yaw": 0,
 	"type": "equirectangular",
-	"panorama": "data/panoramas/rostov_5/rostov_5.jpg",
+	"panorama": "data/panoramas/rostov_1/rostov_1.jpg",
 	"transition":"cssFade",
 }

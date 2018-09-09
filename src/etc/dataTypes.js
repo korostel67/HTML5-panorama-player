@@ -65,15 +65,15 @@
 			if( config.hasOwnProperty("default") ) this.default = config.default;
 			if( config.default !== null && this.default.length < this.min ) {
 				this.default = this.default + ( Array( this.min - this.default.length + 1 ).join("*") );
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default\'s value number of characters is less then min ("+this.min+") value." );
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default value number of characters is less then min ("+this.min+") value." );
 			}
 			if( config.default !== null && this.default.length > this.max ) {
 				this.default.substring(0, this.max);
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default\'s value number of characters is more then max ("+this.max+") value." );
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default value number of characters is more then max ("+this.max+") value." );
 			}
 			if( config.hasOwnProperty("pattern") ) this.pattern = config.pattern;
 			if( config.default !== null && this.default.length && this.pattern && !this.pattern.test(this.default) ) {
-				if(this.strict)  throw new pannellum.customErrors.dataTypeError( "The default\'s value doesn\'t match the pattern." );
+				if(this.strict)  throw new pannellum.customErrors.dataTypeError( "The default value doesn\'t match the pattern." );
 			}
 		}
 	}
@@ -89,14 +89,15 @@
 			value = this.default;
 		}
 		if( ln > this.max ) {
-			value = value.substring(0, this.max);
-			if(this.strict) throw new pannellum.customErrors.dataTypeError( "The value length is more then max ("+this.max+") number of characters." );
-			value = (this.default !== null) ? this.default : "";
+			value = value.substring(0, this.max) + '...';
+			if(this.strict) {
+				throw new pannellum.customErrors.dataTypeError( "The value length is more then max ("+this.max+") number of characters." );
+				value = (this.default !== '') ? this.default : "";
+			}
 		}
-
 		if( this.pattern && !this.pattern.test(value) ) {
 			if(this.strict) throw new pannellum.customErrors.dataTypeError( "The value \"" + value + "\" doesn\'t match the pattern." );
-			value = (this.default !== null) ? this.default : "";
+			value = (this.default !== '') ? this.default : "";
 		}
 		//if( !this.noValue && !value ) throw new pannellum.customErrors.dataTypeError( "The value must be set." );
 		return value;
@@ -130,11 +131,11 @@
 			if( config.hasOwnProperty("default") ) this.default = Number( config.default );
 			if( this.default < this.min ) {
 				this.default = this.min;
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default\'s value is less then min ("+this.min+") value." );
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default value is less then min ("+this.min+") value." );
 			}
 			if( this.default > this.max ) {
 				this.default = this.max;
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default\'s value is more then max ("+this.max+") value." );
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The default value is more then max ("+this.max+") value." );
 			}
 		}
 	}
@@ -158,9 +159,10 @@
 	pannellum.dataTypes.dtNumber = function(config) { return new DtNumber(config); }
 
 	////// Component Settings prototype ///////
-	var DtComponents = function(config){
-		this.type = "DtComponentSettings";
+	var DtSettings = function(config){
+		this.type = "DtSettings";
 		this.strict = false;
+		this.family = ''; //components, actions
 		this.rel = ""; // componet family relation
 		if( config && typeof config == "object" ) {
 			if( config.hasOwnProperty("strict") ) this.strict = Boolean( config.strict );
@@ -169,40 +171,57 @@
 
 	//var pano = "equirectangular";
 	//var pano = defaults.type.check( pano );
-	DtComponents.prototype.check = function(value) {
+	DtSettings.prototype.check = function(value) {
 		//value is array of: [["compType",{settingsObject}],...]
-		//if value is empty or not an array
-		if( value.constructor != Array ) {
+		//if value is ! empty or not an array
+		if( value && typeof value != 'object' &&  value.constructor != Array) {
 			value = [];
 			if(this.strict) throw new pannellum.customErrors.dataTypeError( "The value is not Array." );
 		}
+
 		// do nothing, as there are no components defined
-		if( value.length == 0 ) return value;
-		var i, valueLength = value.length, compSettings, partSymbol = "components." + this.rel;
+		if(!value || value.length == 0 ) return value;
+		var i, valueLength = value.length, pSettings, partSymbol = this.family + '.' + this.rel;
 		for(i=0; i<valueLength; i++) {
-			compSettings = pannellum.util.getSettings( value[i] );
-			if(!compSettings) {
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The component settings is incorrect." );
+			pSettings = pannellum.util.getSettings( value[i] );
+			if(!pSettings) {
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The " + this.rel + " settings are incorrect." );
 				continue;
 			}
-			if( !pannellum.dependencies.hasOwnProperty( partSymbol + "." + compSettings.name ) ) {
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The type '" + this.rel + "." + compSettings.name + "' is not supported." );
+			if( !pannellum.dependencies.hasOwnProperty( partSymbol + "." + pSettings.name ) ) {
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The type '" + partSymbol + "." + pSettings.name + "' is not supported." );
 				continue;
 			}
-			if( !compSettings.settings || Object.isEmpty(compSettings.settings) ){
-				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The settings for '" + this.rel + "." + compSettings.name + "' are not defined." );
+			if( !pSettings.settings || Object.isEmpty(pSettings.settings) ){
+				if(this.strict) throw new pannellum.customErrors.dataTypeError( "The settings for '" + partSymbol + "." + pSettings.name + "' are not defined." );
 				continue;
 			}
 		}
 		return value;
 	}
+
 	////// DtHotSpots //////
 	var DtHotSpots = function(config) {
 		DtHotSpots.superclass.constructor.apply(this, arguments);
 		this.type = "DtHotSpots";
+		this.family = 'components';
 		this.rel = "hotSpots";
 	}
-	pannellum.util.extend(DtHotSpots, DtComponents);
+	pannellum.util.extend(DtHotSpots, DtSettings);
 	pannellum.dataTypes.dtHotSpots = function(config) { return new DtHotSpots(config); }
+
+	////// DtTransitions //////
+	var DtTransitions = function(config) {
+		DtTransitions.superclass.constructor.apply(this, arguments);
+		this.type = "DtTransitions";
+		this.family = 'actions';
+		this.rel = "transitions";
+	}
+	pannellum.util.extend(DtTransitions, DtSettings);
+	DtTransitions.prototype.check = function(value) {
+		var value = DtSettings.prototype.check.apply(this, [value]);
+		return pannellum.util.getSettings( value );
+	}
+	pannellum.dataTypes.dtTransitions = function(config) { return new DtTransitions(config); }
 
 }(window.pannellum || (window.pannellum={}), document, undefined));
