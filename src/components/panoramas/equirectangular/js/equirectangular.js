@@ -374,7 +374,7 @@
 		}
 		pannellum.util.xHttpRequest(settigs).then(function(request){
 			var img = request.response;
-			if (This.config.useGPanoXMP) {
+			if (!This.config.useGPanoXMP) {
 				This.panoImage.src = window.URL.createObjectURL(img);
 			}else{
 				parseGPanoXMP(img);
