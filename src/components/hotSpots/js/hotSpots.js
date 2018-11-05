@@ -131,7 +131,7 @@
 		^ @memberof HotSpot
 		*/
 		HotSpot.prototype.hide = function(){
-			pannellum.util.domElement.hide(this.container, 'visible');
+			pannellum.util.domElement.hide(this.container, 'hidden');
 		}
 
 		/**

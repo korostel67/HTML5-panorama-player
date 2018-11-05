@@ -437,7 +437,7 @@ Util.domElement = function(){
 		},
 		hide : function(el, type) {
       switch (type) {
-        case 'visible': el.style.visibility = "hidden";
+        case 'hidden': el.style.visibility = "hidden";
           break;
         default: el.style.display = "none";
       }

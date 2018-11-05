@@ -195,23 +195,26 @@
 		var yawCos = Math.cos((-hs.config.yaw + panoPosition.yaw) * Math.PI / 180);
 		var hfovTan = Math.tan(panoPosition.hfov * Math.PI / 360);
 		var z = hsPitchSin * configPitchSin + hsPitchCos * yawCos * configPitchCos;
+		var tX, tY;
 		if ((hs.config.yaw <= 90 && hs.config.yaw > -90 && z <= 0) ||
 		  ((hs.config.yaw > 90 || hs.config.yaw <= -90) && z <= 0)) {
 			hs.hide();
+			// Put hotspots off the field view
+			tX = -30; tY = -30;
 		} else {
 			hs.show();
 			// Subpixel rendering doesn't work in Firefox
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=739176
 			var containerWidth = this.container.clientWidth / (window.devicePixelRatio || 1),
 				containerHeight = this.container.clientHeight / (window.devicePixelRatio || 1);
-			var tX = (-containerWidth /
+			tX = (-containerWidth /
 				hfovTan * Math.sin((-hs.config.yaw + panoPosition.yaw) * Math.PI / 180) *
-				hsPitchCos / z / 2 + containerWidth / 2 - 13),
-				tY = (-containerWidth / hfovTan * (hsPitchSin *
+				hsPitchCos / z / 2 + containerWidth / 2 - 13);
+			tY = (-containerWidth / hfovTan * (hsPitchSin *
 				configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2 +
 				containerHeight / 2 - 13);
-			hs.translate({x:tX, y:tY});
 		}
+		hs.translate({x:tX, y:tY});
 	}
 
 	/**
