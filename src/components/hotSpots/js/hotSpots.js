@@ -271,5 +271,8 @@
 	}
 	pannellum.util.extend(InfoHotSpot, pannellum.components.hotSpots.hotSpot);
 	pannellum.components.hotSpots.info = InfoHotSpot;
+	
+	pannellum.util.domElement.create({ name : 'link', attributes : {
+		href: 'src/components/hotSpots/css/styles.css'} }, document.head);
 
 }(window.pannellum || (window.pannellum={}), document));

@@ -23,8 +23,6 @@
 				this.config[ci] = dataTypes[ci].check( value );
 			}
 		}*/
-		pannellum.util.domElement.create({ name : 'link', attributes : {
-			href: 'src/actions/transitions/simpleOpacity/css/style.css'}}, document.head);
 	}
 
 	pannellum.util.extend(SimpleOpacity, pannellum.actions.action);
@@ -45,5 +43,8 @@
 
 	/**@namespace*/
 	pannellum.actions.transitions.simpleOpacity = SimpleOpacity;
+
+	pannellum.util.domElement.create({ name : 'link', attributes : {
+		href: 'src/actions/transitions/simpleOpacity/css/styles.css'} }, document.head);
 
 }(window.pannellum || (window.pannellum={}), document));

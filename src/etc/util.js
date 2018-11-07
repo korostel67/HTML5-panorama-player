@@ -19,6 +19,14 @@ Util.loadScript = function(scriptsArray, domObject){
 	var pendingElemets = [];
 	var firstElement = document.scripts[0];
 
+ // to check if script was loaded before
+  /*var els = document.querySelectorAll("a[href^='http://domain.com']");
+
+  for (var i = 0, l = els.length; i < l; i++) {
+    var el = els[i];
+    el.innerHTML = el.innerHTML.replace(/link/gi, 'dead link');
+  }*/
+
 	// Watch scripts load in IE
 	function stateChange( cb ) {
 	  // Execute as many scripts in order as we can
@@ -36,27 +44,35 @@ Util.loadScript = function(scriptsArray, domObject){
 
 	// loop through our scriptElement urls
 	while (tagProp = scriptsArray.shift()) {
-	  var scrProp = { name:"script", attributes: tagProp }
+    var scrType;
+    if(tagProp.hasOwnProperty('src')) {
+      scrType = 'script';
+    } else if (tagProp.hasOwnProperty('href')) {
+      scrType = 'link';
+    } else {
+      throw new Error('Indefined element type to load');
+    }
+	  var scrProp = { name: scrType, attributes: tagProp }
 	  if ("async" in firstElement) { // modern browsers
-		setTimeout((function(scrProp) {
-			scrProp.attributes.async = false;
-			scriptElement = Util.domElement.create(scrProp);
-			domObject.appendChild(scriptElement);
-			//Callback
-		}(scrProp)),1);
+  		setTimeout((function(scrProp) {
+  			scrProp.attributes.async = false;
+  			scriptElement = Util.domElement.create(scrProp);
+  			domObject.appendChild(scriptElement);
+  			//Callback
+  		}(scrProp)),1);
 	  } else if (firstElement.readyState) { // IE<10
-		// create a scriptElement and add it to our todo pile
-		var cb;
-		if( scrProp.hasOwnProperty("attributes") && scrProp.attributes.hasOwnProperty("onload") ) {
-			cb = scrProp.attributes.onload;
-			delete scrProp.attributes.onload;
-		}
-		scriptElement = Util.domElement.create(scrProp);
-		scriptElement.onreadystatechange = function() { stateChange(cb) };
-		pendingElemets.push(scriptElement);
+  		// create a scriptElement and add it to our todo pile
+  		var cb;
+  		if( scrProp.hasOwnProperty("attributes") && scrProp.attributes.hasOwnProperty("onload") ) {
+  			cb = scrProp.attributes.onload;
+  			delete scrProp.attributes.onload;
+  		}
+  		scriptElement = Util.domElement.create(scrProp);
+  		scriptElement.onreadystatechange = function() { stateChange(cb) };
+  		pendingElemets.push(scriptElement);
 	  } else { // fall back to defer
-		scrProp.attributes.defer = undefined;
-		Util.domElement.write(scrProp);
+  		scrProp.attributes.defer = undefined;
+  		Util.domElement.write(scrProp);
 	  }
 	}
 }

@@ -148,10 +148,6 @@
 				'style': {width:'100%', height:'100%', position:'absolute', top:0, left:0}
 			},
 		}, this.hostContainer);
-
-		pannellum.util.domElement.create({ name : 'link', attributes : {
-			href: 'src/components/hotSpots/css/styles.css'
-		} }, document.head);
 	}
 	pannellum.util.extend(HotSpotsCollection, pannellum.collections.arrayCollection);
 
