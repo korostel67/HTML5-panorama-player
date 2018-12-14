@@ -188,7 +188,7 @@ Util.xHttpRequest = function(_settings) {
 
 		var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;
 		var request = new XHR();
-
+    //request.withCredentials = true;
 		request.onloadend = function() {
 			try{
 				if (request.status == 200) {
