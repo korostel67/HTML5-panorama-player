@@ -357,9 +357,15 @@
 	Equirectangular.prototype.prepare = function() {
 		var This = this;
 		this.panoImage = new Image();
-    if ((new URL(this.config.panorama)).origin !== window.location.origin) {
-      this.panoImage.crossOrigin = "";
-    }
+
+		// If we have absolute panorama URL and it is outside of current domain
+		// set panorama image crossOrigin attribute = ""
+		if (pannellum.util.getUrlType(this.config.panorama) === 'absolute') {
+			if ((new URL(this.config.panorama)).origin !== window.location.origin) {
+	      this.panoImage.crossOrigin = "";
+	    }
+		}
+
 		this.panoImage.onload = function() {
 			window.URL.revokeObjectURL(this.src);  // Clean up
 			pannellum.eventBus.dispatch("image_loaded", This);

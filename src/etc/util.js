@@ -97,6 +97,11 @@ Util.httpGetQueryVars = function() {
 	return queryVars;
 }
 
+Util.getUrlType = function(url_str) {
+  var r = new RegExp('^(?:[a-z]+:)?//', 'i');
+  return (r.test(url_str)) ? 'absolute' : 'relative';
+}
+
 Util.setCurrentTime = function() {
 	if (typeof performance !== "undefined" && performance.now()) {
 		return performance.now();
