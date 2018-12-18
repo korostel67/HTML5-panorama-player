@@ -430,9 +430,9 @@
 		 */
 		function createPanoObject(panoId, panoSettings) {
 			try{
-				if( !panoId )  throw new Error("Panorama id is not defoned");
-				if( !panoSettings )  throw new Error("Panorama settings are not defoned");
-				if( !panoSettings.type )  throw new Error("Panorama type is not defoned");
+				if( !panoId )  throw new Error("Panorama id is not defined");
+				if( !panoSettings )  throw new Error("Panorama settings are not defined");
+				if( !panoSettings.type )  throw new Error("Panorama type is not defined");
 				if( !pannellum.components.panoramas.hasOwnProperty( panoSettings.type ) ) return null;
 				panoSettings.panoId = panoId;
 				var panoObject = PartsCollection["panoramas"].item(panoId);

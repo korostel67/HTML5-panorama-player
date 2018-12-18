@@ -8,5 +8,5 @@
 	"pitch": 0,
 	"yaw": 80,
 	"type": "equirectangular",
-	"panorama": "/data/panoramas/rostov_1/rostov_1.jpg"
+	"panorama": "https://i.imgur.com/LJ4E1Zs.jpg"
 }

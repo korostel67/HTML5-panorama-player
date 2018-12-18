@@ -1,12 +1,12 @@
 {
 	"useGPanoXMP":false,
-	"title":"rostov_1",
+	"title":"rostov_4",
 	"info": "By Korostel",
 	"hfov": 100,
 	"minHfov": 70,
 	"maxHfov": 110,
 	"pitch": 0,
-	"yaw": 80,
+	"yaw": 0,
 	"type": "equirectangular",
-	"panorama": "/data/panoramas/rostov_1/rostov_1.jpg"
+	"panorama": "https://i.imgur.com/HSRdhyj.jpg"
 }
