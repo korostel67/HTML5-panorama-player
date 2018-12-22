@@ -28,6 +28,8 @@
 
 		"actions.transitions.simpleOpacity" : { depends : ["actions.action"], src : "src/actions/transitions/simpleOpacity/js/script.js" },
 
+		"components.modules.loadProgress" :{depends:["components.modules.contentBox"], src: "src/components/modules/loadProgress/js/script.js"},
+
 	}
 	if( !pannellum.hasOwnProperty("dependencies") ) pannellum.dependencies = dependencies;
 

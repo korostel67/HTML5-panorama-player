@@ -1,0 +1,31 @@
+.pnlm-module-loadProgress {
+	display: none;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 200px;
+	height: 100px;
+	margin: -50px 0 0 -100px;
+	background-color: rgba(155,0,0,.7);
+	border-radius: 3px;
+	text-align: center;
+	font-size: 14px;
+	color: #fff;
+	cursor: pointer;
+	z-index:1;
+}
+
+.pnlm-module-loadProgress .pnlm-title-box {
+    position: relative;
+    font-size: 20px;
+    display: table;
+    padding-left: 5px;
+    margin-bottom: 3px;
+}
+
+.pnlm-module-loadProgress .pnlm-info-box {
+    position: relative;
+    font-size: 12px;
+    display: table;
+    padding-left: 5px;
+}

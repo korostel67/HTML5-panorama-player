@@ -76,7 +76,7 @@
 
 		this.prepare();
 
-		pannellum.eventBus.addEventListener("image_loaded", function(event, prop) {
+		pannellum.eventBus.addEventListener("panorama:image_loaded", function(event, prop) {
 			try {
 					if( (event.dispatcher==This) ) This.init( This.config.haov * Math.PI / 180, This.config.vaov * Math.PI / 180, This.config.vOffset * Math.PI / 180 );
 			} catch(e) {
@@ -368,7 +368,7 @@
 
 		this.panoImage.onload = function() {
 			window.URL.revokeObjectURL(this.src);  // Clean up
-			pannellum.eventBus.dispatch("image_loaded", This);
+			pannellum.eventBus.dispatch("panorama:image_loaded", This);
 		};
 		var settigs = {
 			url		: this.config.panorama,
@@ -378,7 +378,7 @@
 			responseType : "blob",
 			requestHeaders : {"Accept": "image/*,*/*;q=0.9"},
 			onProgress: function(progress_data){
-				pannellum.eventBus.dispatch("load_progress", This, progress_data);
+				pannellum.eventBus.dispatch("panorama:load_progress", This, progress_data);
 			}
 		}
 		pannellum.util.xHttpRequest(settigs).then(function(request){

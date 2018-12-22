@@ -463,6 +463,9 @@ Util.domElement = function(){
         default: el.style.display = "none";
       }
     },
+		isHidden : function(el) {
+      return !( el.offsetWidth || el.offsetHeight || el.getClientRects().length );
+    },
 		show : function(el, type) {
       switch (type) {
         case 'visible': el.style.visibility = "visible";
