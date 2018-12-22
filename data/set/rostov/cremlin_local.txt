@@ -1,0 +1,155 @@
+{
+	"firstPanorama" : "rostov_1",
+	"panoramas": {
+		"rostov_1": {
+			"require": {"id": "local/rostov/rostov_1/rostov_1"},
+			"hotSpots": [
+				["panorama", {
+					"pitch": -1.8,
+					"yaw": 89,
+					"info": "Переход в панопаму rostov_2dddd",
+					"sceneId": "rostov_2",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}],
+				["panorama", {
+					"pitch": 0,
+					"yaw": 104,
+					"sceneId": "rostov_3",
+					"targetYaw": -170,
+					"targetPitch": 1
+				}],
+				["link", {
+					"pitch": 0,
+					"yaw": 70,
+					"info": "Ссылка на сайт",
+					"URL": "http://arg-pg.ru/panorama/ladoga.html"
+				}],
+				["info", {
+					"pitch": 0,
+					"yaw": 50,
+					"info": "Информация"
+				}],
+				["info", {
+					"pitch": 0,
+					"yaw": 40,
+					"info": "Изображение",
+					"image": "/data/images/map.gif"
+				}]
+			]
+		},
+		"rostov_2": {
+			"require": {"id": "local/rostov/rostov_2/rostov_2"},
+			"hotSpots": [
+				["panorama", {
+					"pitch": 2.3,
+					"yaw": 180,
+					"info": "rostov_3",
+					"sceneId": "rostov_3",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}],
+				["panorama", {
+					"pitch":-1.23,
+					"yaw": -102,
+					"info": "rostov_1",
+					"sceneId": "rostov_1",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}]
+			]
+		},
+		"rostov_3": {
+			"require": {"id": "local/rostov/rostov_3/rostov_3"},
+			"hotSpots": [
+				["panorama", {
+					"pitch": 3,
+					"yaw": -150,
+					"info": "rostov_4",
+					"sceneId": "rostov_4",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}],
+				["panorama", {
+					"pitch": -1,
+					"yaw": 63,
+					"info": "rostov_2",
+					"sceneId": "rostov_2",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}],
+				["panorama", {
+					"pitch": 2.5,
+					"yaw": -174,
+					"info": "rostov_5",
+					"sceneId": "rostov_5",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}]
+			]
+		},
+		"rostov_4": {
+			"require": {"id": "local/rostov/rostov_4/rostov_4"},
+			"hotSpots": [
+				["panorama", {
+					"pitch": -6,
+					"yaw": 19,
+					"info": "rostov_3",
+					"sceneId": "rostov_3",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}],
+				["panorama", {
+					"pitch": 0,
+					"yaw": 34,
+					"info": "rostov_2",
+					"sceneId": "rostov_2",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}],
+				["panorama", {
+					"pitch": -3,
+					"yaw": 165,
+					"info": "rostov_5",
+					"sceneId": "rostov_5",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}]
+			]
+		},
+		"rostov_5": {
+			"require": {"id": "local/rostov/rostov_5/rostov_5"},
+			"hotSpots": [
+				["panorama", {
+					"pitch": 0,
+					"yaw": -121,
+					"info": "rostov_6",
+					"sceneId": "rostov_6",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}],
+				["panorama", {
+					"pitch": -4,
+					"yaw": 15,
+					"info": "rostov_4",
+					"sceneId": "rostov_4",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}]
+			]
+		},
+		"rostov_6": {
+			"require": {"id": "local/rostov/rostov_6/rostov_6"},
+			"hotSpots": [
+				["panorama", {
+					"pitch": 0,
+					"yaw": 42,
+					"info": "rostov_5",
+					"sceneId": "rostov_5",
+					"targetYaw": "same",
+					"targetPitch": "same"
+				}]
+			]
+		}
+	}
+}
