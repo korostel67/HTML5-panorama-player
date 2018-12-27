@@ -559,6 +559,39 @@ Util.mathD = function() {
 	};
 }();
 
+/**
+ * Copy to clipboard
+ * @see https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript?page=1&tab=votes#tab-top
+ */
+Util.copyTextToClipboard = function(text) {
+  var fallbackCopyTextToClipboard = function (text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+       document.execCommand("copy");
+    } catch (err) {
+      console.error("Fallback: Oops, unable to copy", err);
+    }
+
+    document.body.removeChild(textArea);
+  }
+
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text);
+    return;
+  }
+  navigator.clipboard.writeText(text).then(
+    function() {},
+    function(err) {
+      console.error("Async: Could not copy text: ", err);
+    }
+  );
+}
+
 pannellum.util = Util;
 
 ////// Polyfills //////
