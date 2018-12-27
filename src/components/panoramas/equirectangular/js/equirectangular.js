@@ -90,7 +90,7 @@
 
 	/**
 	 * Render new view of panorama.
-	 * @memberof Renderer
+	 * @memberof Equirectangular
 	 * @instance
 	 * @param {number} pitch - Pitch to render at.
 	 * @param {number} yaw - Yaw to render at.
@@ -173,7 +173,7 @@
 
 	/**
 	 * Initialize renderer.
-	 * @memberof Renderer
+	 * @memberof Equirectangular
 	 * @instance
 //## WebGL, CSS3
 //## CM, EQ, VD
