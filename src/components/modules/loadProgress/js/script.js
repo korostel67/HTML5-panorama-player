@@ -5,39 +5,47 @@
 
 	if( !pannellum.components.modules.hasOwnProperty("contentBox") ) throw new Error("pannellum.components.modules.contentBox class is undefined");
 
-///// Load progress bar /////
-	var LoadProgress = function(host, hostContainer, config) {
+///// Load progress hexagon /////
+	var LoadProgress  = function(host, hostContainer, config) {
 		LoadProgress.superclass.constructor.apply(this, arguments);
-		var This = this;
-		this.name = 'LoadProgress';
+		var This         = this;
+		this.name        = 'LoadProgress';
+		this.modulePath  = 'src/components/modules/loadProgress/';
 		this.container.classList.add('pnlm-module-loadProgress');
-
-		var box = pannellum.util.domElement.create({ name : "div", attributes : {"className": "pnlm-box"}}, this.container);
+		var svgObject    = pannellum.util.domElement.create({
+			name : 'object',
+			attributes : {
+				'className' : 'pnlm-svg',
+				'data'      : this.modulePath + 'img/hexagon.svg',
+				'type'      : 'image/svg+xml',
+				'width'     : '100%',
+				'height'    : '100%'
+			}
+		}, this.container);
 
 		this.addFields([
-			["title", { name : 'div', attributes : {'className': 'pnlm-title-box'}}],
-			["numerator", { name : 'div', attributes : {'className': 'pnlm-info-box'}}],
-			["denominator", { name : 'div', attributes : {'className': 'pnlm-info-box'}}],
-			["unit", { name : 'div', attributes : {'className': 'pnlm-info-box'}}]
-		], box);
-		this.update( {title:"Loading", numerator:"0", denominator:"0", unit:"0"} );
-
+			["percentage", { name : 'div', attributes : {'className': 'percentage text'}, content: "0" }],
+			["sign", { name : 'div', attributes : {'className': 'sign text'}, content: "%" }]
+		]);
+		this.update({percentage: '0%'});
 		pannellum.eventBus.addEventListener("panorama:image_loaded", function(event) {
 			This.hide();
+			This.update({percentage: 0});
 		});
 
 		pannellum.eventBus.addEventListener("panorama:load_progress", function(event, data) {
 			if (This.isHidden()) {
 				This.show();
 			}
-			This.update( {title:"Loading", numerator:data.numerator, denominator:data.denominator, unit:data.unit, unit:data.percent} );
+			This.update({percentage: Math.round(data.percent)});
 		}, this);
+
+		pannellum.util.domElement.create({ name : 'link', attributes : {
+			href: This.modulePath + 'css/styles.css'} }, document.head);
+
 	}
 	pannellum.util.extend(LoadProgress, pannellum.components.modules.contentBox);
 
 	pannellum.components.modules.loadProgress = LoadProgress;
-
-	pannellum.util.domElement.create({ name : 'link', attributes : {
-		href: 'src/components/modules/loadProgress/css/styles.css'} }, document.head);
 
 }(window.pannellum || (window.pannellum={}), document));
