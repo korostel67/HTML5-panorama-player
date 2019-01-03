@@ -99,6 +99,9 @@
 	 */
 
 	Equirectangular.prototype.render = function(returnImage) {
+	    if ( !this.gl ) {
+				throw new pannellum.customErrors.undefinedDataError('No WebGL available for rendering!');
+	    }
 			Equirectangular.superclass.render.apply(this, arguments);
 			var pitch = this.config.pitch * Math.PI / 180;
 			var yaw = this.config.yaw * Math.PI / 180;

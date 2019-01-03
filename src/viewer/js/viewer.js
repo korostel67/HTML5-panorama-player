@@ -105,7 +105,8 @@
 		, This);
 
 		pannellum.eventBus.addEventListener("viewer_ready", function() {
-			loadPanorama( Config.settings.set.firstPanorama );
+		  ViewerState.lock();
+			This.loadPanorama( This, RenderContainer, Config.settings.set.firstPanorama );
 		}, this);
 
 		pannellum.eventBus.addEventListener("panorama:initialized", function(event) {
@@ -114,6 +115,7 @@
 			}
 
 			var panoObjest = PartsCollection["panoramas"].item(event.dispatcher.panoId);
+			if (!panoObjest) return false;
 			var pano_0 = getPanoramaByIndex(0);
 			if( pano_0 && pano_0.panoId != panoObjest.panoId ) {
 				if (pano_0.transition) {
@@ -147,7 +149,8 @@
 		}, this);
 
 		pannellum.eventBus.addEventListener("panorama_to_load", function(event, prop) {
-		  loadPanorama( prop.panoId, prop );
+		  ViewerState.lock();
+		  This.loadPanorama( This, RenderContainer, prop.panoId, prop );
 		}, this);
 
 		// Load required files
@@ -294,11 +297,16 @@
 
 		/**
 		 * Loads panorama by it's ID.
-		 * @private
-		 * @param {string} Panorama ID to be loaded.
+		 * @public
+		 ^ @param {object} host Host object
+		 ^ @param {object} hostContainer The hostContainer
+		 * @param {string} panoId Panorama ID to be loaded.
+		 * @param {object} newPointing The new pointing for panorama
 		 */
-		function loadPanorama(panoId, newPointing) {
-			ViewerState.lock();
+		this.loadPanorama = function(host, hostContainer, panoId, newPointing) {
+			if( !host )  throw new Error("The host object is not defined");
+			if( !hostContainer )  throw new Error("The hostContainer is not defined");
+			if( !panoId )  throw new Error("Panorama id is not defined");
 			//Options:
 			// - check if panorama has already been initialized (can be found in the panoramas collection)
 
@@ -339,7 +347,8 @@
 						}
 						if( !pannellum.components.hasOwnProperty( "panoramas" ) ) pannellum.components.panoramas = {};
 						if( pannellum.components.panoramas.hasOwnProperty( panoSettings.type ) ) {
-							var panoObject = createPanoObject(panoId, panoSettings);
+							var panoObject = createPanoObject(host, hostContainer, panoId, panoSettings);
+							panoObject.show();
 							setNewPointing(panoObject, newPointing);
 						}else{
 							// - if there are no panorama type class in the system
@@ -348,7 +357,8 @@
 								"components.panoramas",
 								[panoSettings.type]).then(
 								function() {
-									var panoObject = createPanoObject(panoId, panoSettings);
+									var panoObject = createPanoObject(host, hostContainer, panoId, panoSettings);
+									panoObject.show();
 									setNewPointing(panoObject, newPointing);
 								},
 								function(msg){
@@ -422,14 +432,19 @@
 		}
 
 		/**
-		 * Creates new panorama instance.
+		 * Creates new panorama instance if not exists in the PartsCollection
+		 * and adds it to PartsCollection. Returns panorama object.
 		 * @private
-		 * @param {String} Panorama ID to be instanciated.
-		 * @param {String} Panorama settings.
+		 ^ @param {object} host Host object
+		 ^ @param {object} hostContainer The hostContainer
+		 * @param {String} panoId Panorama ID to be instanciated.
+		 * @param {String} panoSettings Panorama settings.
 		 * @returns {Object} Panorama object
 		 */
-		function createPanoObject(panoId, panoSettings) {
+		function createPanoObject(host, hostContainer, panoId, panoSettings) {
 			try{
+				if( !host )  throw new Error("The host object is not defined");
+				if( !hostContainer )  throw new Error("The hostContainer is not defined");
 				if( !panoId )  throw new Error("Panorama id is not defined");
 				if( !panoSettings )  throw new Error("Panorama settings are not defined");
 				if( !panoSettings.type )  throw new Error("Panorama type is not defined");
@@ -440,14 +455,14 @@
 					PartsCollection["panoramas"].add(
 						panoId,
 						new pannellum.components.panoramas[ panoSettings.type ](
-							This,
-							RenderContainer,
+							host,
+							hostContainer,
 							panoSettings
 						)
 					);
 					panoObject = PartsCollection["panoramas"].item(panoId);
 				}
-				panoObject.show();
+
 				return panoObject;
 			}catch(e){
 				pannellum.errorMessage.show( "messageBox", e.name, "Invalid settings in \"set.panoramas." + panoSettings.type + "." + panoId + "\" section: " + e.message );
