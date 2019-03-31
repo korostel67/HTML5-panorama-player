@@ -1,5 +1,3 @@
-
-
 .pnlm-hotspot {
     position: absolute;
     height: 26px;
@@ -72,7 +70,7 @@
   cursor:pointer;
 }
 .pnlm-LinkHotSpot {
-  background-position:0 0;
+  background-position:0 -52px;
   cursor:pointer;
 }
 .pnlm-LinkHotSpot .pnlm-tooltip {

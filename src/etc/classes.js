@@ -358,6 +358,14 @@
 	}
 
 	/**
+	* Check if component HTMLElement is hidden
+	^ @memberof Component
+	*/
+	Component.prototype.isHidden = function(){
+		return pannellum.util.domElement.isHidden(this.container);
+	}
+
+	/**
 	* Disable component. Removes component HTMLElement container from the host container
 	^ @memberof Component
 	*/

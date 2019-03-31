@@ -1,0 +1,25 @@
+.pnlm-module-loadProgress {
+	display: none;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin: -25px 0 0 -25px;
+	width: 50px;
+	height: 80px;
+	text-align: center;
+	font-size: 14px;
+	z-index:1;
+}
+
+.pnlm-module-loadProgress .pnlm-svg {
+	width: 50px; height: 50px;
+}
+
+.pnlm-module-loadProgress .text {
+	display:inline;
+  background-color: #ffffff52;
+	padding:2px;
+	text-align: center;
+	font-family:sans-serif;
+	border-radius: 3px;
+}

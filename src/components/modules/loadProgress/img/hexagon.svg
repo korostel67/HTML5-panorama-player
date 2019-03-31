@@ -1,0 +1,31 @@
+<svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
+  x="0px" y="0px" viewBox="0 0 33.024 33.024"
+  style="enable-background:new 0 0 33.024 33.024;" xml:space="preserve">
+  <style>
+  #backgrondGrop polygon{ fill:#ffffff; opacity: 0.5; }
+  #segmentGroup polygon { opacity: 1; }
+  #segmentGroup polygon:nth-child(1) { fill:#e06c75; animation: opac 1.2s linear infinite 0s; }
+  #segmentGroup polygon:nth-child(2) { fill:#d19a56; animation: opac 1.2s linear infinite 0.2s; }
+  #segmentGroup polygon:nth-child(3) { fill:#98c379; animation: opac 1.2s linear infinite 0.4s; }
+  #segmentGroup polygon:nth-child(4) { fill:#3db0c2; animation: opac 1.2s linear infinite 0.6s; }
+  #segmentGroup polygon:nth-child(5) { fill:#a074d7; animation: opac 1.2s linear infinite 1.8s; }
+  #segmentGroup polygon:nth-child(6) { fill:#c678a5; animation: opac 1.2s linear infinite 1.0s; }
+    @keyframes opac { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+  </style>
+  <g id="backgrondGrop">
+    <polygon points="14.678,15.453 7.339,2.741 0,15.453" />
+    <polygon points="16.514,14.393 23.85,1.682 9.174,1.682" />
+    <polygon points="18.346,15.453 33.024,15.453 25.686,2.741" />
+    <polygon points="18.346,17.571 25.686,30.284 33.024,17.571" />
+    <polygon points="16.514,18.631 9.174,31.342 23.85,31.342" />
+    <polygon points="14.678,17.571 0,17.571 7.339,30.284" />
+  </g>
+  <g id="segmentGroup">
+    <polygon points="14.678,15.453 7.339,2.741 0,15.453" />
+    <polygon points="16.514,14.393 23.85,1.682 9.174,1.682" />
+    <polygon points="18.346,15.453 33.024,15.453 25.686,2.741" />
+    <polygon points="18.346,17.571 25.686,30.284 33.024,17.571" />
+    <polygon points="16.514,18.631 9.174,31.342 23.85,31.342" />
+    <polygon points="14.678,17.571 0,17.571 7.339,30.284" />
+  </g>
+</svg>

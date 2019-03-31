@@ -1,0 +1,41 @@
+﻿{
+	"viewer" : {
+		"container": "panorama",
+		"width": "900px",
+		"height": "300px"
+	},
+	"controls" : [
+		["fullscreen",{"top":"10px","left":"20px"}]
+	],
+	"modules" : [
+		"msgBox",
+		"panoInfo"
+	],
+	"set": {
+    "require": {"id": "rostov/set-1"},
+		"firstPanorama" : "circle",
+		"panoramas": {
+			"circle": {
+				"title":"Ростов2",
+				"info": "By Korostel2",
+				"hfov": 110,
+				"pitch": 0,
+				"maxPitch":10,
+				"yaw": 0,
+				"type": "equirectangular",
+				"panorama": "../pano/ristisari_06.jpg",
+				"transition":"cssFade",
+				"hotSpots": [
+					["panorama", {
+						"pitch": 10,
+						"yaw": 20,
+						"info": "Imported 1",
+						"sceneId": "house2",
+						"targetYaw": "same",
+						"targetPitch": "same"
+					}]
+				]
+			}
+		}
+	}
+}

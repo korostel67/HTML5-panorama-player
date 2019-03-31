@@ -1,0 +1,12 @@
+{
+	"useGPanoXMP":false,
+	"title":"rostov_3",
+	"info": "By Korostel",
+	"hfov": 100,
+	"minHfov": 70,
+	"maxHfov": 110,
+	"pitch": 0,
+	"yaw": 0,
+	"type": "equirectangular",
+	"panorama": "https://i.imgur.com/VENLSTc.jpg"
+}

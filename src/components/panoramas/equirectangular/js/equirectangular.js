@@ -76,7 +76,7 @@
 
 		this.prepare();
 
-		pannellum.eventBus.addEventListener("image_loaded", function(event, prop) {
+		pannellum.eventBus.addEventListener("panorama:image_loaded", function(event, prop) {
 			try {
 					if( (event.dispatcher==This) ) This.init( This.config.haov * Math.PI / 180, This.config.vaov * Math.PI / 180, This.config.vOffset * Math.PI / 180 );
 			} catch(e) {
@@ -90,7 +90,7 @@
 
 	/**
 	 * Render new view of panorama.
-	 * @memberof Renderer
+	 * @memberof Equirectangular
 	 * @instance
 	 * @param {number} pitch - Pitch to render at.
 	 * @param {number} yaw - Yaw to render at.
@@ -99,6 +99,9 @@
 	 */
 
 	Equirectangular.prototype.render = function(returnImage) {
+	    if ( !this.gl ) {
+				throw new pannellum.customErrors.undefinedDataError('No WebGL available for rendering!');
+	    }
 			Equirectangular.superclass.render.apply(this, arguments);
 			var pitch = this.config.pitch * Math.PI / 180;
 			var yaw = this.config.yaw * Math.PI / 180;
@@ -173,7 +176,7 @@
 
 	/**
 	 * Initialize renderer.
-	 * @memberof Renderer
+	 * @memberof Equirectangular
 	 * @instance
 //## WebGL, CSS3
 //## CM, EQ, VD
@@ -368,7 +371,7 @@
 
 		this.panoImage.onload = function() {
 			window.URL.revokeObjectURL(this.src);  // Clean up
-			pannellum.eventBus.dispatch("image_loaded", This);
+			pannellum.eventBus.dispatch("panorama:image_loaded", This);
 		};
 		var settigs = {
 			url		: this.config.panorama,
@@ -378,7 +381,7 @@
 			responseType : "blob",
 			requestHeaders : {"Accept": "image/*,*/*;q=0.9"},
 			onProgress: function(progress_data){
-				pannellum.eventBus.dispatch("load_progress", This, progress_data);
+				pannellum.eventBus.dispatch("panorama:load_progress", This, progress_data);
 			}
 		}
 		pannellum.util.xHttpRequest(settigs).then(function(request){
