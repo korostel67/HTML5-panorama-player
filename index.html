@@ -10,33 +10,36 @@
 <div id="panorama" class="panorama"></div>
 
 <script type="text/javascript">
-var settings = {
-	//"require" : { "id": "settings-1"}, //mode : [ add ]|[ update ]|[ add, update ], },
-	"viewer" : {
-		'container': 'panorama',
-		'width': '100%',
-		'height': '400px',
-		'keyboardZoom' : false,
-		'autoRotate' : true, //Setting this parameter causes the panorama to automatically rotate when loaded.
-		'autoRotateSpeed' : 1000, //The value specifies the rotation speed in degrees per second. Positive is counter-clockwise, and negative is clockwise.
-		'autoRotateInactivityDelay' : 1000, //Sets the delay, in milliseconds, to start automatically rotating the panorama after user activity ceases. This parameter only has an effect if the autoRotate parameter is set.
-		'autoRotateStopDelay' : 2000, //Sets the delay, in milliseconds, to stop automatically rotating the panorama after it is loaded. This parameter only has an effect if the autoRotate parameter is set.
-	},
-	"controls" : [
-		//"fullscreen",
-		["fullscreen",{"top":"10px","left":"20px"}]
-	],
-	"modules" : [
-		"panoPosition"
-	],
-	"transition" : ["simpleOpacity",{"duration":2000}],
-	"set": {
-		"require": {"id": "rostov/cremlin_remote"}
-		//"require": {"id": "rostov/cremlin_local"}
+var config = {
+	dataDir  : {settings: "data/settings/", set:" data/set/", panoramas: "data/panoramas/"},
+	settings : {
+		//"require" : { "id": "settings-1"}, //mode : [ add ]|[ update ]|[ add, update ], },
+		"viewer" : {
+			'container': 'panorama',
+			'width': '100%',
+			'height': '400px',
+			'keyboardZoom' : false,
+			'autoRotate' : true, //Setting this parameter causes the panorama to automatically rotate when loaded.
+			'autoRotateSpeed' : 1000, //The value specifies the rotation speed in degrees per second. Positive is counter-clockwise, and negative is clockwise.
+			'autoRotateInactivityDelay' : 1000, //Sets the delay, in milliseconds, to start automatically rotating the panorama after user activity ceases. This parameter only has an effect if the autoRotate parameter is set.
+			'autoRotateStopDelay' : 2000, //Sets the delay, in milliseconds, to stop automatically rotating the panorama after it is loaded. This parameter only has an effect if the autoRotate parameter is set.
+		},
+		"controls" : [
+			//"fullscreen",
+			["fullscreen",{"top":"10px","left":"20px"}]
+		],
+		"modules" : [
+			"panoPosition"
+		],
+		"transition" : ["simpleOpacity",{"duration":2000}],
+		"set": {
+			"require": {"id": "rostov/cremlin_remote"}
+			//"require": {"id": "rostov/cremlin_local"}
+		}
 	}
 }
 
-pannellum.viewer(settings);
+pannellum.viewer(config);
 </script>
 </body>
 </html>

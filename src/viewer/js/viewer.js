@@ -20,7 +20,7 @@
 				require: { jsonFileExtention : "txt" },
 				dataDir: { settings:"data/settings/",set:"data/set/",panoramas:"data/panoramas/"},
 				viewer : {},
-				panorama : {},
+				//panorama : {},
 				settings: {
 					viewer : {},
 					controls : [],
@@ -164,7 +164,7 @@
 								//Load styles
 								pannellum.util.domElement.create({ name : "link", attributes : { href:"src/viewer/css/styles.css" } }, document.head );
 								//Import InitialConfig initial structure
-								Object.deepExtend( Config.settings, InitialConfig );
+								Object.deepExtend( Config, InitialConfig );
 								//Update Config.settings with QueryVars
 								QueryVars = pannellum.util.httpGetQueryVars();
 								if( !Object.isEmpty(QueryVars) ) {
@@ -1114,7 +1114,7 @@
 		pannellum.errorMessage = ErrorMessage.getInstance();
 	}
 
-	pannellum.viewer = function() { return new Viewer(settings); }
+	pannellum.viewer = function(settings) { return new Viewer(settings); }
 
 
 	/**
