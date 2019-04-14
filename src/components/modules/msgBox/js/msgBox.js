@@ -18,7 +18,7 @@
 			["info3", { name : 'div', attributes : {'className': 'message-box-info'}, content: "Test2" }]
 		]);
 		this.update({info:"Test3"});
-		
+
 		this.show();
 	}
 	//pannellum.util.extend(MsgBox, pannellum.components.modules.baseClasses.contentBox);
@@ -27,7 +27,7 @@
 	//pannellum.components.modules.baseClasses.msgBox = MsgBox; //There is nothing to extend
 	pannellum.components.modules.msgBox = MsgBox;
 
-	pannellum.util.domElement.create({ name : 'link', attributes : {
-		href: 'src/components/modules/msgBox/css/styles.css'} }, document.head);
+	pannellum.util.loadResource({ name : 'link', attributes : {
+		href: '~src/components/modules/msgBox/css/styles.css'} }, document.head, pannellum.util.getBasePath());
 
 }(window.pannellum || (window.pannellum={}), document));

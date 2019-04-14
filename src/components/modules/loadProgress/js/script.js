@@ -10,7 +10,7 @@
 		LoadProgress.superclass.constructor.apply(this, arguments);
 		var This         = this;
 		this.name        = 'LoadProgress';
-		this.modulePath  = 'src/components/modules/loadProgress/';
+		this.modulePath  = this.host.getBasePath() + 'src/components/modules/loadProgress/';
 		this.container.classList.add('pnlm-module-loadProgress');
 		var svgObject    = pannellum.util.domElement.create({
 			name : 'object',
@@ -40,7 +40,7 @@
 			This.update({percentage: Math.round(data.percent)});
 		}, this);
 
-		pannellum.util.domElement.create({ name : 'link', attributes : {
+		pannellum.util.loadResource({ name : 'link', attributes : {
 			href: This.modulePath + 'css/styles.css'} }, document.head);
 
 	}

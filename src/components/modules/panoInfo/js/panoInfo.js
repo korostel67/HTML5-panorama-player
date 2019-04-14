@@ -26,7 +26,7 @@
 			var pitch = event.dispatcher.getPitch();
 			This.update( { pitch: pitch, yaw: yaw } );
 		}, this);
-		
+
 		this.show();
 	}
 	//pannellum.util.extend(PanoInfo, pannellum.components.modules.baseClasses.contentBox);
@@ -34,7 +34,7 @@
 
 	pannellum.components.modules.panoInfo = PanoInfo;
 
-	pannellum.util.domElement.create({ name : 'link', attributes : {
-		href: 'src/components/modules/panoInfo/css/styles.css'} }, document.head);
+	pannellum.util.loadResource({ name : 'link', attributes : {
+		href: '~src/components/modules/panoInfo/css/styles.css'} }, document.head, pannellum.util.getBasePath());
 
 }(window.pannellum || (window.pannellum={}), document));

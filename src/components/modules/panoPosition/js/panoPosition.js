@@ -5,9 +5,6 @@
 
 	if( !pannellum.components.modules.hasOwnProperty("contentBox") ) throw new Error("pannellum.components.modules.contentBox class is undefined");
 
-	pannellum.util.domElement.create({ name : 'link', attributes : {
-		href: 'src/components/modules/panoPosition/css/styles.css'} }, document.head);
-
 ///// Panorama position /////
 	var PanoPosition = function(host, hostContainer, config) {
 		PanoPosition.superclass.constructor.apply(this, arguments);
@@ -101,5 +98,8 @@
 	pannellum.util.extend(PanoPosition, pannellum.components.modules.contentBox);
 
 	pannellum.components.modules.panoPosition = PanoPosition;
+
+	pannellum.util.loadResource({ name : 'link', attributes : {
+		href: '~src/components/modules/panoPosition/css/styles.css'} }, document.head, pannellum.util.getBasePath());
 
 }(window.pannellum || (window.pannellum={}), document));

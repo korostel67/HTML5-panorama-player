@@ -267,14 +267,25 @@
 	 * Action Base Class
 	 * @class
 	 ^ @param {object} Configuration
+	 * @property {object} host
 	 * @property {string} name
 	 * @property {string} type - Action type
 	 * @property {object} config - Component configuration
 	 */
-	var Action = function(config){
+	var Action = function(host, config){
 		this.name = "Action";
 		this.type = "action";
 		this.config = {};
+		this.host = host;
+	}
+
+	/**
+	* Returns the host base path
+	* @returns {string}
+	^ @memberof Action
+	*/
+	Action.prototype.getBasePath = function() {
+		return this.host.getBasePath();
 	}
 
 	/**
@@ -326,8 +337,18 @@
 	}
 
 	/**
+	 * Returns host base path.
+	 * @returns {string}
+ 	 * @memberof Component
+	 * @public
+	 */
+	Component.prototype.getBasePath = function() {
+    return this.host.getBasePath();
+	}
+
+	/**
 	* Checks component configuration
-	^ @memberof Component
+	* @memberof Component
 	* @param {object} Component configuration object
 	* @param {object} Data types apropriate for the component
 	*/

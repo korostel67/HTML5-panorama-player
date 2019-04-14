@@ -20,7 +20,7 @@
 		if( !pannellum.dataTypes ) throw new Error("pannellum.dataTypes is undefined");
 		var dataTypes = {
 			top : pannellum.dataTypes.dtString({ default: '66px', pattern: /^(\d*)(px|%)$/, strict: true  }),
-			left : pannellum.dataTypes.dtString({ default: '4px', pattern: /^(\d*)(px|%)$/ , strict: true  }),
+			left : pannellum.dataTypes.dtString({ default: '4px', pattern: /^(\d*)(px|%)$/ , strict: true  })
 		}
 		this.checkConfig(config, dataTypes);
 		//End of Data type section
@@ -31,7 +31,7 @@
 
 		if ( this.fullscreenAnabled() ) {
 			//Load styles
-			pannellum.util.domElement.create({ name : 'link', attributes : { href:'src/components/controls/fullscreen/css/styles.css' , onload : function(){
+			pannellum.util.loadResource([{ name : 'link', attributes : { href:'~src/components/controls/fullscreen/css/styles.css' , onload : function(){
 				This.container.addEventListener('click', function(){
 					This.toggleFullscreen();
 				});
@@ -46,7 +46,7 @@
 				//test control
 				This.show();
 				//end test
-			}} }, document.head );
+			}} }], document.head, this.host.getBasePath() );
 		}
 	}
 

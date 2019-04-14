@@ -12,7 +12,7 @@
 	 * @property {string} type - Action type
 	 * @property {object} config - Component configuration
 	 */
-	var SimpleOpacity = function(config){
+	var SimpleOpacity = function(host, config){
 		SimpleOpacity.superclass.constructor.apply(this, arguments);
 		this.name = "SimpleOpacity";
 		this.type = "action";
@@ -44,7 +44,7 @@
 	/**@namespace*/
 	pannellum.actions.transitions.simpleOpacity = SimpleOpacity;
 
-	pannellum.util.domElement.create({ name : 'link', attributes : {
-		href: 'src/actions/transitions/simpleOpacity/css/styles.css'} }, document.head);
+	pannellum.util.loadResource({ name : 'link', attributes : {
+		href: '~src/actions/transitions/simpleOpacity/css/styles.css'} }, document.head, pannellum.util.getBasePath());
 
 }(window.pannellum || (window.pannellum={}), document));

@@ -62,9 +62,10 @@ var Panorama = function(host, hostContainer, config){
 	if (!this.transition && this.config.transition) {
 		pannellum.partsLoader.addParts(
 			"actions.transitions." + this.config.transition.name,
-			{}
+			{},
+			this.host.getBasePath()
 		).then(function(result) {
-			This.transition = new pannellum.actions.transitions[This.config.transition.name](This.config.transition.settings);
+			This.transition = new pannellum.actions.transitions[This.config.transition.name](This, This.config.transition.settings);
 		});
 	}
 
@@ -152,7 +153,8 @@ Panorama.prototype.createHotspots = function() {
 	this.config.hotSpots = this.config.hotSpots.sort( function(a, b) { return a[1].pitch < b[1].pitch; });
 	pannellum.partsLoader.addParts(
 		"components.hotSpots",
-		this.config.hotSpots
+		this.config.hotSpots,
+		this.host.getBasePath()
 	).then(function(result) {
 		if( !This.hotSpotsCollection ) This.hotSpotsCollection = new pannellum.collections.hotSpotsCollection(This, This.container);
 		if( !pannellum.components.hasOwnProperty( 'hotSpots' ) ) pannellum.components['hotSpots'] = {}

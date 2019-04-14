@@ -8,5 +8,5 @@
 	"pitch": 0,
 	"yaw": 0,
 	"type": "equirectangular",
-	"panorama": "data/panoramas/local/rostov/rostov_3/rostov_3.jpg"
+	"panorama": "/data/panoramas/local/rostov/rostov_3/rostov_3.jpg"
 }

@@ -17,8 +17,9 @@
 	var Viewer = function(InitialConfig) {
 		var This = this,
 			Config = {
+				basePath : pannellum.util.getBasePath(),
 				require: { jsonFileExtention : "txt" },
-				dataDir: { settings:"data/settings/",set:"data/set/",panoramas:"data/panoramas/"},
+				dataDir: { settings:"/data/settings/",set:"/data/set/",panoramas:"/data/panoramas/"},
 				viewer : {},
 				//panorama : {},
 				settings: {
@@ -153,21 +154,22 @@
 		  This.loadPanorama( This, RenderContainer, prop.panoId, prop );
 		}, this);
 
+		//Import InitialConfig initial structure
+		Object.deepExtend( Config.settings, InitialConfig );
+		Config.dataDir = Config.settings.dataDir;
 		// Load required files
-		pannellum.util.loadScript( [
-			//{ src:"src/etc/classes.js" },
-			{ src:"src/etc/dependencies.js" },
-			{ src:"src/etc/dataTypes.js", onload: function(){
+		pannellum.util.loadResource( [
+			//{ name: 'script', attributes: { src:"~src/etc/classes.js" }},
+			{ name: 'script', attributes: { src:"~src/etc/dependencies.js" }},
+			{ name: 'script', attributes: { src:"~src/etc/dataTypes.js", onload: function(){
 				try{
 					pannellum.partsLoader.addParts(
 						"components",
-						["component"]).then(
+						["component"], Config.basePath).then(
 							function(result) {
 								if( !result ) throw new pannellum.customErrors.notFoundError('Something wrong with components class loading');
 								//Load styles
-								pannellum.util.domElement.create({ name : "link", attributes : { href:"src/viewer/css/styles.css" } }, document.head );
-								//Import InitialConfig initial structure
-								Object.deepExtend( Config, InitialConfig );
+								pannellum.util.loadResource({ name : "link", attributes : { href:"~src/viewer/css/styles.css" } }, document.head, Config.basePath );
 								//Update Config.settings with QueryVars
 								QueryVars = pannellum.util.httpGetQueryVars();
 								if( !Object.isEmpty(QueryVars) ) {
@@ -219,8 +221,8 @@
 				}catch(e){
 					console.log( e.name, e.message, e.stack );
 				}
-			}}
-		], document.head );
+			}}}
+		], document.head, Config.basePath );
 
 		/**
 		 * Initializes viewer.
@@ -355,7 +357,7 @@
 							// - - load appropriate type
 							pannellum.partsLoader.addParts(
 								"components.panoramas",
-								[panoSettings.type]).then(
+								[panoSettings.type], Config.basePath).then(
 								function() {
 									var panoObject = createPanoObject(host, hostContainer, panoId, panoSettings);
 									panoObject.show();
@@ -520,7 +522,7 @@
 			}
 			pannellum.partsLoader.addParts(
 				"components." + addComponents.type,
-				addComponents.compSet).then(
+				addComponents.compSet, Config.basePath).then(
 				function() {
 					if( !PartsCollection.hasOwnProperty(addComponents.type) ) PartsCollection[addComponents.type] = new pannellum.collections.objectCollection();
 					//Probably here the components should be initialzed
@@ -1017,10 +1019,9 @@
 			pannellum.eventBus.dispatch("fullscreen_change", null, { active : ViewerState.fullscreenActive() });
 		}
 
-
 		/**
 		 * Toggles fullscreen mode.
-		 * @private
+		 * @public
 		 */
 		this.toggleFullscreen = function() {
         if (!this.viewerState.fullscreenActive()) {
@@ -1048,6 +1049,15 @@
                 document.msExitFullscreen();
             }
         }
+		}
+
+		/**
+		 * Returns viewer base path.
+		 * @returns {string}
+		 * @public
+		 */
+		this.getBasePath = function() {
+        return Config.basePath;
 		}
 
 		/**
@@ -1152,7 +1162,7 @@
 			//	}
 			//}, true);
 
-			var AddParts = function( nameSpace, parts ){
+			var AddParts = function( nameSpace, parts, basePath){
 				return new Promise(function(resolve, reject) {
 					var partSymbol;
 					var procId = pannellum.util.getUniqId();
@@ -1189,12 +1199,12 @@
 										}
 									}
 								})(FilesStack[i][j]);
-								filesToLoad.push( FilesStack[i][j] );
+								filesToLoad.push( { name: 'script', attributes: FilesStack[i][j]} );
 							}
 						}
 						if(filesToLoad.length) {
 							filesToLoadLength = filesToLoad.length;
-							pannellum.util.loadScript( filesToLoad, document.head );
+							pannellum.util.loadResource( filesToLoad, document.head, basePath );
 						}else{
 							console.log('array filesToLoad is empty, nothing to load');
 							resolve(false);

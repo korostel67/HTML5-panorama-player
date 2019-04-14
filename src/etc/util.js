@@ -1,7 +1,3 @@
-/*
- * Pannellum classes dependancies
- */
-
 (function(pannellum, document, undefined) {
 
 var Util = {}
@@ -11,8 +7,11 @@ Util.extend = function(Child, Parent) {
  Child.superclass = Parent.prototype;
 }
 
-Util.loadScript = function(scriptsArray, domObject){
+Util.loadResource = function(scriptsArray, domObject, basePath){
 	if( !scriptsArray ) return null;
+  if (scriptsArray.constructor !== Array) {
+    scriptsArray = [scriptsArray];
+  }
 	if( !domObject ) domObject = document.head;
 	var tagProp;
 	var scriptElement;
@@ -31,48 +30,59 @@ Util.loadScript = function(scriptsArray, domObject){
 	function stateChange( cb ) {
 	  // Execute as many scripts in order as we can
 	  var pendingScript;
-	  while ( typeof pendingElemets[0]!="undefined" && (pendingElemets[0].readyState == "loaded" || pendingElemets[0].readyState == "complete") ) {
-		pendingScript = pendingElemets.shift();
-		// avoid future loading events from this scriptElement (eg, if src changes)
-		pendingScript.onreadystatechange = null;
-		// can't just appendChild, old IE bug if scriptElement isn't closed
-		firstElement.parentNode.insertBefore(pendingScript, firstElement);
-		//Callback
-		if ( cb ) cb();
+  	while ( typeof pendingElemets[0]!="undefined" && (pendingElemets[0].readyState == "loaded" || pendingElemets[0].readyState == "complete") ) {
+  		pendingScript = pendingElemets.shift();
+  		// avoid future loading events from this scriptElement (eg, if src changes)
+  		pendingScript.onreadystatechange = null;
+  		// can't just appendChild, old IE bug if scriptElement isn't closed
+  		firstElement.parentNode.insertBefore(pendingScript, firstElement);
+  		//Callback
+  		if ( cb ) cb();
 	  }
 	}
 
 	// loop through our scriptElement urls
-	while (tagProp = scriptsArray.shift()) {
-    var scrType;
-    if(tagProp.hasOwnProperty('src')) {
-      scrType = 'script';
-    } else if (tagProp.hasOwnProperty('href')) {
-      scrType = 'link';
-    } else {
-      throw new Error('Indefined element type to load');
+	while (resrcProp = scriptsArray.shift()) {
+    if(!resrcProp.hasOwnProperty('name')) {
+      throw new Error('Indefined element type to load. The "name" property is not set.');
     }
-	  var scrProp = { name: scrType, attributes: tagProp }
+    if(!resrcProp.hasOwnProperty('attributes')) {
+      throw new Error('"attributes" property is not set for the "' + resrcProp.name  + '" element');
+    }
+
+    if (typeof basePath !== 'undefined') {
+      switch (true) {
+        case (resrcProp.attributes.hasOwnProperty('src')) :
+          resrcProp.attributes.src = resrcProp.attributes.src.replace(/^~/, basePath);
+          break;
+        case (resrcProp.attributes.hasOwnProperty('href')) :
+          resrcProp.attributes.href = resrcProp.attributes.href.replace(/^~/, basePath);
+          break;
+        default:
+          throw new Error('No resource property defined for the "' + resrcProp.name  + '" element');
+      }
+    }
+
 	  if ("async" in firstElement) { // modern browsers
-  		setTimeout((function(scrProp) {
-  			scrProp.attributes.async = false;
-  			scriptElement = Util.domElement.create(scrProp);
+  		setTimeout((function(resrcProp) {
+  			resrcProp.attributes.async = false;
+  			scriptElement = Util.domElement.create(resrcProp);
   			domObject.appendChild(scriptElement);
   			//Callback
-  		}(scrProp)),1);
+  		}(resrcProp)),1);
 	  } else if (firstElement.readyState) { // IE<10
   		// create a scriptElement and add it to our todo pile
   		var cb;
-  		if( scrProp.hasOwnProperty("attributes") && scrProp.attributes.hasOwnProperty("onload") ) {
-  			cb = scrProp.attributes.onload;
-  			delete scrProp.attributes.onload;
+  		if( resrcProp.hasOwnProperty("attributes") && resrcProp.attributes.hasOwnProperty("onload") ) {
+  			cb = resrcProp.attributes.onload;
+  			delete resrcProp.attributes.onload;
   		}
-  		scriptElement = Util.domElement.create(scrProp);
+  		scriptElement = Util.domElement.create(resrcProp);
   		scriptElement.onreadystatechange = function() { stateChange(cb) };
   		pendingElemets.push(scriptElement);
 	  } else { // fall back to defer
-  		scrProp.attributes.defer = undefined;
-  		Util.domElement.write(scrProp);
+  		resrcProp.attributes.defer = undefined;
+  		Util.domElement.write(resrcProp);
 	  }
 	}
 }
@@ -100,6 +110,26 @@ Util.httpGetQueryVars = function() {
 Util.getUrlType = function(url_str) {
   var r = new RegExp('^(?:[a-z]+:)?//', 'i');
   return (r.test(url_str)) ? 'absolute' : 'relative';
+}
+
+// The idea was taken from https://github.com/QueueHammer/codecraftsman.js/blob/master/codecraftsman.js
+Util.getBasePath = function() {
+  var pathParts;
+  try {
+  	throw new Error();
+  } catch(e) {
+  	var stackLines = e.stack.split('\n');
+  	var callerIndex = 0;
+  	for(var i in stackLines){
+  		if(stackLines[i].match(/http[s]?:\/\//)) {
+  			//pathParts = stackLines[i].match(/((http[s]?:\/\/.+\/)([^\/]+\.js)):/);
+    		var pathParts = stackLines[i].match(/(http[s]?:\/\/.+\/)(src\/etc\/util\.js)/);
+        return pathParts[1];
+  		}
+  	}
+  }
+
+  return '/';
 }
 
 Util.setCurrentTime = function() {
@@ -383,7 +413,7 @@ Util.domElement = function(){
 			if (!prop.hasOwnProperty(attr)) continue;
 			switch(typeof prop[attr]) {
 				//case "object" : el.setAttribute(attr, writeProp(prop[attr])); break; //llike style attribute
-				case "object" : setAttr(el[attr], prop[attr]); break; //llike style attribute
+				case "object" : setAttr(el[attr], prop[attr]); break; //like style attribute
 				case "function" :
 				case "string" :
 				default : el[attr] =  prop[attr]; //el.setAttribute(attr, prop[attr]);
