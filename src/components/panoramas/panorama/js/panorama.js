@@ -12,7 +12,7 @@ var Panorama = function(host, hostContainer, config){
 	this.type = 'panorama';
 	if( !pannellum.dataTypes ) throw new Error("pannellum.dataTypes is undefined");
 	var dataTypes = {
-		panoId: pannellum.dataTypes.dtString({ min: 2, max: 30, strict: true, default: null }),
+		panoId: pannellum.dataTypes.dtString({ min: 1, max: 30, strict: true, default: null }),
 		title: pannellum.dataTypes.dtString({ min: 4, max: 30, default: '' }),
 		info: pannellum.dataTypes.dtString({ min: 4, max: 255, default: '' }),
 		preview : pannellum.dataTypes.dtUrl(),

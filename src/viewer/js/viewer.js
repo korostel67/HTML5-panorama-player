@@ -185,7 +185,7 @@
 								//var sourcesList = ["require","set.require"];
 								var sourcesList = [
 									{
-										"require" :	function() { return ((Config.settings.require)? Config.dataDir.settings + Config.settings.require.id : null ); },
+										"require" :	function() { return ((Config.settings.require)? Config.dataDir.settings + Config.settings.require.id + "." + Config.require.jsonFileExtention : null ); },
 										"callback" :	function(request) {
 											if(request && request.response) {
 												if(Config.settings.require && Config.settings.require.mode && Config.settings.require.mode === 'replace') {
@@ -196,7 +196,7 @@
 											}
 										}
 									},{
-										"require" :	function() { return ((Config.settings.set.require)? Config.dataDir.set + Config.settings.set.require.id : null ); },
+										"require" :	function() { return ((Config.settings.set.require)? Config.dataDir.set + Config.settings.set.require.id + "." + Config.require.jsonFileExtention : null ); },
 										"callback" :	function(request) {
 											if(request && request.response) {
 												if(Config.settings.set.require && Config.settings.set.require.mode && Config.settings.set.require.mode === 'replace') {
@@ -333,12 +333,16 @@
 			// If not (the panorama is not in the set)
 			// panoId actualy is a folder path like "folder" or "folder/folder/folder"
 				panoSettings = {
-					require : { id : panoId }
+					require : {
+						id : panoId
+					},
+					transition : Config.settings.transition
 				}
 			}
 			var sourcesList = [
 				{
-					"require" : function() { return ((panoSettings.require)? Config.dataDir.panoramas + panoSettings.require.id : null ); },
+					"require" : function() { return ((panoSettings.require)? Config.dataDir.panoramas + panoSettings.require.id + "." + Config.require.jsonFileExtention : null ); },
+					//"require" : function() { return ((panoSettings.require)? '/ajax/panorama/' + panoSettings.require.id : null ); },
 					"callback" : function(request) {
 						if(request && request.response) {
 							if(panoSettings.require.mode && panoSettings.require.mode === 'replace') {
@@ -486,7 +490,7 @@
 				if ( targetSource ){
 					var requireUrl = ( targetSource.require )? targetSource.require() : null;
 					if( requireUrl ) {
-						var url = requireUrl + "." + Config.require.jsonFileExtention;
+						var url = requireUrl;
 						var settigs = {
 							url		: url,
 							method	: "GET",
