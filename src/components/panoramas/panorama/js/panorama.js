@@ -164,10 +164,9 @@ Panorama.prototype.createHotspots = function() {
 			for( var i=0; i<hsLength; i++ ) {
 				hsSettings = pannellum.util.getSettings( This.config.hotSpots[i] );
 				if( hsSettings === null ) continue;
-				if( !This.hotSpotsCollection.item( hsSettings.name ) && pannellum.components['hotSpots'].hasOwnProperty( hsSettings.name ) ) {
+				if( pannellum.components['hotSpots'].hasOwnProperty( hsSettings.name ) ) {
 					try{
 						This.hotSpotsCollection.add( hsSettings );
-						This.hotSpotsCollection.item( hsSettings );
 					}catch(e){
 						pannellum.errorMessage.show( "messageBox", e.name, "Invalid settings in \"set.panoramas." + This.panoId + ".hotSpots[" + i + "]\". " + e.message );
 					}

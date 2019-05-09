@@ -18,7 +18,6 @@
 		pannellum.util.domElement.create({ name : "div", attributes : {"className": "hline"}}, crossChar);
 
 		var box = pannellum.util.domElement.create({ name : "div", attributes : {"className": "pnlm-box"}}, this.container);
-
 		this.addFields([
 			["title", { name : 'div', attributes : {'className': 'pnlm-title-box'}}],
 
@@ -49,6 +48,8 @@
 		}, this);
 
 		this.fields.nav_pano.addEventListener("click", function(event) {
+
+	console.log(host.getPanoramaByIndex('last').hotSpotsCollection.item(0))
 			var text = '{\n' +
 			  '  yaw         : ' + Math.round(This.position.yaw) + ',\n' +
 				'  pitch       : ' + Math.round(This.position.pitch) + ',\n' +

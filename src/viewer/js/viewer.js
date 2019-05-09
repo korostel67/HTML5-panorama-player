@@ -117,7 +117,7 @@
 
 			var panoObjest = PartsCollection["panoramas"].item(event.dispatcher.panoId);
 			if (!panoObjest) return false;
-			var pano_0 = getPanoramaByIndex(0);
+			var pano_0 = This.getPanoramaByIndex(0);
 			if( pano_0 && pano_0.panoId != panoObjest.panoId ) {
 				if (pano_0.transition) {
 					panoObjest.render();
@@ -139,8 +139,8 @@
 			if( typeof event.dispatcher === 'undefined' ) {
 				throw new pannellum.customErrors.undefinedDataError('Undefined transition:done event dispatcher');
 			}
-			var panoObjest = getPanoramaByIndex(1);
-			var pano_0 = getPanoramaByIndex(0);
+			var panoObjest = This.getPanoramaByIndex(1);
+			var pano_0 = This.getPanoramaByIndex(0);
 			if( pano_0 !== null &&  panoObjest != null && pano_0.panoId !== panoObjest.panoId ) {
 	 			panoObjest.render();
 				pano_0.destroy();
@@ -386,7 +386,7 @@
 		}
 
 		function setNewPointing(panoObject, newPointing) {
-			var pano_0 = getPanoramaByIndex(0);
+			var pano_0 = This.getPanoramaByIndex(0);
 			if (!pano_0 || !panoObject || !newPointing) return false;
 			if( newPointing.hasOwnProperty('targetPitch')) {
 		    if (newPointing.targetPitch === 'same') {
@@ -648,7 +648,7 @@
 			/*
 			//Simple example without animator
 			var mwData = getMouseWheelData(event);
-			var cPanorama = getPanoramaByIndex('last');
+			var cPanorama = This.getPanoramaByIndex('last');
 			setHfov(cPanorama.config.hfov + mwData/2);
 			cPanorama.render();
 			*/
@@ -667,7 +667,7 @@
 			// ];
 			if( pannellum.animator.interactionPriority('MouseWheelInteraction') === true ) pannellum.animator.stop();
 			if( pannellum.animator.getInteraction() == null ) {
-				var panorama = getPanoramaByIndex('last');
+				var panorama = This.getPanoramaByIndex('last');
 				var cInteraction;
 				if( !InteractionsCollection.item('MouseWheelInteraction') ) {
 					cInteraction = new pannellum.interactions.mouseWheelInteraction();
@@ -696,7 +696,7 @@
 			// But not all of it
 			Container.focus();
 			if( pannellum.animator.interactionPriority('MouseInteraction') === true ) pannellum.animator.stop();
-			var panorama = getPanoramaByIndex('last');
+			var panorama = This.getPanoramaByIndex('last');
 			var pos = mousePosition(event);
 			var settings = {yaw:panorama.config.yaw, pitch:panorama.config.pitch, x:pos.x, y:pos.y, canvas:{width:panorama.canvas.width,height:panorama.canvas.height}}
 			if( pannellum.animator.getInteraction() == null ) {
@@ -760,7 +760,7 @@
 			// But not all of it
 			Container.focus();
 			if( pannellum.animator.interactionPriority('TouchInteraction') === true ) pannellum.animator.stop();
-			var panorama = getPanoramaByIndex('last');
+			var panorama = This.getPanoramaByIndex('last');
 			var pos = mousePosition(event.targetTouches[0]);
 			var settings = {yaw:panorama.config.yaw, pitch:panorama.config.pitch, x:pos.x, y:pos.y, canvas:{width:panorama.canvas.width,height:panorama.canvas.height}}
 			 if (event.targetTouches.length == 2) {
@@ -836,7 +836,7 @@
 			event.preventDefault();
 			if( pannellum.animator.interactionPriority('KeyInteraction') === true ) pannellum.animator.stop();
 			if( pannellum.animator.getInteraction() == null ) {
-				var panorama = getPanoramaByIndex('last');
+				var panorama = This.getPanoramaByIndex('last');
 				var cInteraction;
 				if( !InteractionsCollection.item('KeyInteraction') ) {
 					var st = 0.3;
@@ -999,7 +999,7 @@
 		 * @private
 		 */
 		function onDocumentResize() {
-			var panorama = getPanoramaByIndex('last');
+			var panorama = This.getPanoramaByIndex('last');
 		    if(panorama) {
 				// Resize panorama
 				panorama.resize();
@@ -1067,11 +1067,11 @@
 		/**
 		 * Gets panorama object from PartsCollection["panoramas"]
 		 * by it's index in the RenderContainer.
-		 * @private
+		 * @public
 		 * @param {number} Panorama index.
 		 * @returns {Object} Panorama object
 		 */
-		function getPanoramaByIndex(i) {
+		this.getPanoramaByIndex = function (i) {
 			if( !i ) i = 0;
 			if( RenderContainer.childNodes.length == 0 ) {
 				console.log('Can not get panorama by index "' + i + '", the container is empty. Returned null.');
@@ -1088,7 +1088,7 @@
 				return null;
 			}
 			return panoObject;
-		}
+		};
 
 
 		/**
