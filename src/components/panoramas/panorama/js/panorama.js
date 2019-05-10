@@ -144,25 +144,20 @@ Panorama.prototype.resize = function() {
 		}
 };
 
-Panorama.prototype.createHotspots = function() {
-	if( !this.config.hasOwnProperty('hotSpots') || !this.config.hotSpots ) return null;
+Panorama.prototype.createHotspots = function(hotSpots) {
 	var This = this;
 	//Prepare HotspotsComponents
 	// Then Create HotSpots
 	// Sort by pitch so tooltip is never obscured by another hot spot
-	this.config.hotSpots = this.config.hotSpots.sort( function(a, b) { return a[1].pitch < b[1].pitch; });
-	pannellum.partsLoader.addParts(
-		"components.hotSpots",
-		this.config.hotSpots,
-		this.host.getBasePath()
-	).then(function(result) {
+	hotSpots = hotSpots.sort( function(a, b) { return a[1].pitch < b[1].pitch; });
+	var createHotspots = function (hotSpots) {
 		if( !This.hotSpotsCollection ) This.hotSpotsCollection = new pannellum.collections.hotSpotsCollection(This, This.container);
 		if( !pannellum.components.hasOwnProperty( 'hotSpots' ) ) pannellum.components['hotSpots'] = {}
-		var hsLength = This.config.hotSpots.length;
+		var hsLength = hotSpots.length;
 		if( hsLength > 0 ) {
 			var hsSettings;
 			for( var i=0; i<hsLength; i++ ) {
-				hsSettings = pannellum.util.getSettings( This.config.hotSpots[i] );
+				hsSettings = pannellum.util.getSettings( hotSpots[i] );
 				if( hsSettings === null ) continue;
 				if( pannellum.components['hotSpots'].hasOwnProperty( hsSettings.name ) ) {
 					try{
@@ -177,12 +172,23 @@ Panorama.prototype.createHotspots = function() {
 		if( hsLength > 0 ) {
 			This.translateHotspots();
 		}
-	//	This.resize();
-	},
-	function(msg){
-		//If there are errors, do not stop; just warn
-		console.log(msg);
-	});
+	};
+
+	if( pannellum.components.hasOwnProperty( 'hotSpots' ) ) {
+		createHotspots(hotSpots);
+	}else{
+		pannellum.partsLoader.addParts(
+			"components.hotSpots",
+			hotSpots,
+			this.host.getBasePath()
+		).then(function(result) {
+			createHotspots(hotSpots);
+		//	This.resize();
+		}, function(msg){
+			//If there are errors, do not stop; just warn
+			console.log(msg);
+		});
+	}
 }
 
 Panorama.prototype.translateHotspots = function() {
@@ -193,7 +199,9 @@ Panorama.prototype.translateHotspots = function() {
 	}
 }
 Panorama.prototype.init = function() {
-		this.createHotspots();
+	if( this.config.hasOwnProperty('hotSpots') && this.config.hotSpots.length ) {
+		this.createHotspots(this.config.hotSpots);
+	}
 }
 Panorama.prototype.render = function() {
 	if (this.config.yaw > 180) {

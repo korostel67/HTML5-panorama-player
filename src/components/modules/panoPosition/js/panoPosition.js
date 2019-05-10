@@ -48,18 +48,18 @@
 		}, this);
 
 		this.fields.nav_pano.addEventListener("click", function(event) {
-
-	console.log(host.getPanoramaByIndex('last').hotSpotsCollection.item(0))
-			var text = '{\n' +
-			  '  yaw         : ' + Math.round(This.position.yaw) + ',\n' +
-				'  pitch       : ' + Math.round(This.position.pitch) + ',\n' +
-				'  info        : "",\n' +
-				'  //image     : "",\n' +
-				'  sceneId     : "",\n' +
-				'  targetYaw   : "same",\n' +
-				'  targetPitch : "same",\n' +
-				'}';
-		  pannellum.util.copyTextToClipboard(text);
+			var panorama = host.getPanoramaByIndex(0);
+			var hotspot = ['panorama', {
+				yaw         : Math.round(This.position.yaw),
+				pitch       : Math.round(This.position.pitch),
+				info        : 'Go to rostov_2',
+				sceneId     : "rostov_2",
+				targetYaw   : "same",
+				targetPitch : "same"
+			}];
+			panorama.config.hotSpots.push(hotspot);
+			panorama.createHotspots([hotspot]);
+		  pannellum.util.copyTextToClipboard(window.JSON.stringify(hotspot));
 		});
 
 		this.fields.nav_info.addEventListener("click", function(event) {

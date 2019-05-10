@@ -429,7 +429,9 @@
 		function invokePanoObject(panoObject) {
 			panoObject.container.appendChild(panoObject.canvas);
 			panoObject.container.appendChild(panoObject.hotSpotsCollection.container);
-			panoObject.createHotspots();
+			if( panoObject.config.hasOwnProperty('hotSpots') && panoObject.config.hotSpots.length ) {
+				panoObject.createHotspots(panoObject.config.hotSpots);
+			}
 			panoObject.hostContainer.appendChild(panoObject.container);
 			pannellum.eventBus.dispatch("panorama:initialized", panoObject);
 			panoObject.show();

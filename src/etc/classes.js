@@ -20,10 +20,9 @@
 	var Collection = function(){
 		/**
      * The collection
-     * @private
+     * @public
      */
-		var collection = null;
-		this.collection = function() { return collection; }();
+		this.collection = [];
 	}
 	/**
 	 * Adds item to collection.
@@ -58,7 +57,7 @@
 	 * @memberof Collection
 	 */
 	Collection.prototype.clear = function() {
-		this.collection = null;
+		this.collection = [];
 	}
 
 	/**
@@ -68,9 +67,8 @@
    */
 	var ArrayCollection = function(){
 		ArrayCollection.superclass.constructor.apply(this, arguments);
-		var collection = [];
-		this.collection = function() { return collection; }();
-		this.length = function() { return collection.length; };
+		this.collection = [];
+		this.length = function() { return this.collection.length; };
 	}
 	pannellum.util.extend(ArrayCollection, Collection);
 
@@ -102,8 +100,7 @@
    */
 	var ObjectCollection = function(){
 		ObjectCollection.superclass.constructor.apply(this, arguments);
-		var collection = {};
-		this.collection = function() { return collection; }();
+		this.collection = {};
 	}
 	pannellum.util.extend(ObjectCollection, Collection);
 
